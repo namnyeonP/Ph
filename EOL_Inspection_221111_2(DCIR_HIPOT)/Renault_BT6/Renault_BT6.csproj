@@ -1,0 +1,384 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B5AC4A79-5F94-4D3A-A0C5-020C88EFDDE8}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Renault_BT6</RootNamespace>
+    <AssemblyName>Renault_BT6</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <TargetFrameworkProfile />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>layers_2_icon_48.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PhoenixonLibrary, Version=1.0.0.3, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\bin\PhoenixonLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationFramework.Aero" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsFormsIntegration" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Compile Include="Battery\Bt6.cs" />
+    <Compile Include="Forms\FormPartsCountHipotSetting.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FormPartsCountHipotSetting.Designer.cs">
+      <DependentUpon>FormPartsCountHipotSetting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FormPartsCountSetting.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FormPartsCountSetting.Designer.cs">
+      <DependentUpon>FormPartsCountSetting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FormPortNumber.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FormPortNumber.Designer.cs">
+      <DependentUpon>FormPortNumber.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Inspection\8_ControlLimit.cs" />
+    <Compile Include="MainWindow_CyclerMethod.cs" />
+    <Compile Include="MainWindow_MemoryManager.cs" />
+    <Compile Include="MainWindow_MES.cs" />
+    <Compile Include="MiniScheduler\ClearcaseUC.xaml.cs" />
+    <Compile Include="MiniScheduler\LoadingWindow.xaml.cs" />
+    <Compile Include="MiniScheduler\MainWindow.xaml.cs" />
+    <Compile Include="MiniScheduler\PatternWindow.xaml.cs" />
+    <Compile Include="MiniScheduler\TimePicker.xaml.cs" />
+    <Compile Include="Module\CBMS_CAN.cs" />
+    <Compile Include="Module\CCycler.cs" />
+    <Compile Include="Module\CDAQ.cs" />
+    <Compile Include="Module\CKeysightDMM.cs" />
+    <Compile Include="Module\CLambdaPower.cs" />
+    <Compile Include="Module\CMES.cs" />
+    <Compile Include="Module\CNhtRS232_Receiver.cs" />
+    <Compile Include="Module\CPLC.cs" />
+    <Compile Include="Module\DCIR_Process.cs" />
+    <Compile Include="Module\doubleValue.cs" />
+    <Compile Include="Inspection\1_BarcodeReading.cs" />
+    <Compile Include="Inspection\5_ThermistorCheck.cs" />
+    <Compile Include="Inspection\6_DCIR.cs" />
+    <Compile Include="Inspection\7_FinalCellVoltage.cs" />
+    <Compile Include="Inspection\BMA\01_ConnectionCheck.cs" />
+    <Compile Include="Inspection\BMA\02_TurnBMS.cs" />
+    <Compile Include="Inspection\BMA\03_VersionCheck.cs" />
+    <Compile Include="Inspection\BMA\04_CurrentSensorCheck.cs" />
+    <Compile Include="Inspection\BMA\05_IsolationTest.cs" />
+    <Compile Include="Inspection\BMA\06_TempSensorCheck.cs" />
+    <Compile Include="Inspection\BMA\07_CoolantPumpValveCheck.cs" />
+    <Compile Include="Inspection\BMA\08_DTCAmount.cs" />
+    <Compile Include="Inspection\BMA\09_VoltageCheck.cs" />
+    <Compile Include="Inspection\BMA\10_ActiveIsolation.cs" />
+    <Compile Include="Inspection\BMA\11_IR.cs" />
+    <Compile Include="Inspection\BMA\12_VerifyCurrentSensor.cs" />
+    <Compile Include="Inspection\BMA\13_CEI_Test.cs" />
+    <Compile Include="Inspection\BMA\14_HVIL_ReturnCheck.cs" />
+    <Compile Include="Inspection\BMA\15_CVTN_Check.cs" />
+    <Compile Include="Inspection\BMA\16_PartNumberCheck.cs" />
+    <Compile Include="Inspection\BMA\17_ShutdownThenSleep.cs" />
+    <Compile Include="Inspection\BMA\18_ETC.cs" />
+    <Compile Include="Inspection\4_CellVoltage.cs" />
+    <Compile Include="Inspection\CMA\01_ModuleTemp.cs" />
+    <Compile Include="Inspection\CMA\02_VoltageCheck.cs" />
+    <Compile Include="Inspection\CMA\04_HIPOT.cs" />
+    <Compile Include="Inspection\2_ContackCheck.cs" />
+    <Compile Include="Inspection\3_IRCheck.cs" />
+    <Compile Include="Module\EOL_Define.cs" />
+    <Compile Include="Module\PLC_Control.cs" />
+    <Compile Include="Module\RelayControl.cs" />
+    <Compile Include="NetWork\CSerialPacket.cs" />
+    <Compile Include="NetWork\PCANBasic.cs" />
+    <Compile Include="Window\AlarmWindow.xaml.cs">
+      <DependentUpon>AlarmWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Window\CyclerAlarmWindow.xaml.cs">
+      <DependentUpon>CyclerAlarmWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Window\AmbientTemperatureSpecWindow.xaml.cs">
+      <DependentUpon>AmbientTemperatureSpecWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Window\ContinueWindow.xaml.cs">
+      <DependentUpon>ContinueWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Window\ContinueWindowC727.xaml.cs">
+      <DependentUpon>ContinueWindowC727.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Window\DAQWindow.xaml.cs">
+      <DependentUpon>DAQWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Window\DeviceCheckWindow.xaml.cs">
+      <DependentUpon>DeviceCheckWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Window\InspectionSpecWindow_HIPot.xaml.cs">
+      <DependentUpon>InspectionSpecWindow_HIPot.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Window\InspectionSpecWindow.xaml.cs">
+      <DependentUpon>InspectionSpecWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Window\ListWindow.xaml.cs">
+      <DependentUpon>ListWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Window\NextWindow.xaml.cs">
+      <DependentUpon>NextWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Window\PreCheckRetry.xaml.cs">
+      <DependentUpon>PreCheckRetry.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Window\RelayControllerWindow.xaml.cs">
+      <DependentUpon>RelayControllerWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Window\RequirePasswordWindow.xaml.cs">
+      <DependentUpon>RequirePasswordWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Function\AmbientTempSetting.cs" />
+    <Compile Include="Function\CalcurateResToTemp_C727.cs" />
+    <Compile Include="Function\CanMsg.cs" />
+    <Compile Include="Function\CellDetail.cs" />
+    <Compile Include="Function\Detailitems.cs" />
+    <Compile Include="Function\Languages.cs" />
+    <Compile Include="Function\Models.cs" />
+    <Compile Include="Function\OcvDetail.cs" />
+    <Compile Include="Function\PGLB.cs" />
+    <Compile Include="Function\SafetyCyclerSetting.cs" />
+    <Compile Include="Function\TestItem.cs" />
+    <Page Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Page Include="MiniScheduler\ClearcaseUC.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MiniScheduler\LoadingWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MiniScheduler\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MiniScheduler\PatternWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MiniScheduler\TimePicker.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="StyleDictionary.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window\AlarmWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Window\CyclerAlarmWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window\AmbientTemperatureSpecWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Window\ContinueWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window\ContinueWindowC727.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window\DAQWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window\DeviceCheckWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window\InspectionSpecWindow_HIPot.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Window\InspectionSpecWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window\ListWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window\NextWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window\PreCheckRetry.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window\RelayControllerWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window\RequirePasswordWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Forms\FormPartsCountHipotSetting.resx">
+      <DependentUpon>FormPartsCountHipotSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FormPartsCountSetting.resx">
+      <DependentUpon>FormPartsCountSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FormPortNumber.resx">
+      <DependentUpon>FormPortNumber.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+    <None Include="Resources\Setting.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="ActUtlTypeLib">
+      <Guid>{D217E54E-4A26-4A76-B0AB-57166B90F9AF}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="layers_2_icon_48.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="processList.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.6.1%28x86 및 x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ProtNumber.PNG" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

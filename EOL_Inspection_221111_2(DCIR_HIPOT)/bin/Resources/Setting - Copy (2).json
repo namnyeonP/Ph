@@ -1,0 +1,30 @@
+﻿{
+  "CONFIG": {
+    "DSP": "1",
+    "Chroma": "COM2",
+    "DAQ": "COM3",
+    "TEMP": "COM1",
+    "DMM": "COM2",
+    "EOL_TYPE": "HIPOT"
+  },
+  "RELAY": {
+    "RED": "0",
+    "GREEN": "2",
+    "YELLOW": "1",
+    "BLUE": "3"
+  },
+  "PLC": {
+    "Number": "44",
+    "SEND": "B08090",
+    "RECV": "B08080",
+    "BCR": "W0808"
+  },
+  "MES": {
+    "IP": "10.32.168.68",
+    "PORT": "2152",
+    "EQUIP": "W1PCMA214-7-7",
+    "PROCESS": "P4200",
+    "PRODUCT": "",
+    "USERID": "id"
+  }
+}
