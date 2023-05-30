@@ -1,4 +1,0 @@
-id,VALUE,unit,description
-WPFMMTC4501,1000,V,Plus IR Voltage Level
-WPFMMTC4502,30,sec,Plus IR Time
-WPFMMTC4503,0.0000003,A/str,IR Manual range setting(default Auto)

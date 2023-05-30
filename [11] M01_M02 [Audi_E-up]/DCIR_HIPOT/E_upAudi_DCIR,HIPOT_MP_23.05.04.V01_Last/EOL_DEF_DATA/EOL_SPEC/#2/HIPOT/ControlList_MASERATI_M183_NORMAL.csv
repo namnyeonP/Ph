@@ -1,9 +1,0 @@
-id,VALUE,unit,description
-WM183MMTC4201,1000,V,Plus IR Voltage Level
-WM183MMTC4202,60,sec,Plus IR Time
-WM183MMTC4203,AUTO,A/str,IR Manual range setting(default Auto)
-WM183MMTC4204,2500,V,Plus Withstand Voltage Level
-WM183MMTC4205,1,sec,Plus Withstand Voltage Time
-WM183MMTC4206,5,sec,Plus Withstand Rampup Time
-WM183MMTC4207,0,,Arc Enable
-WM183MMTC4208,5,mA,Arc Limit

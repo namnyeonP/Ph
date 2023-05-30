@@ -1,9 +1,0 @@
-id,VALUE,unit,description
-W2M1MTC4201,500,V,Plus IR Voltage Level
-W2M1MTC4202,60,sec,Plus IR Time
-W2M1MTC4203,2150,V,Plus Withstand Voltage Level
-W2M1MTC4204,3,sec,Plus Withstand Voltage Time
-W2M1MTC4205,5,sec,Plus Withstand Rampup Time
-W2M1MTC4206,0,,Arc Enable
-W2M1MTC4207,5,mA,Arc Limit
-W2M1MTC4208,Auto,A/str,IR Manual range setting(default Auto)
