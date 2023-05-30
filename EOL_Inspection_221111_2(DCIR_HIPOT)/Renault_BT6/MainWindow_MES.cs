@@ -19,7 +19,7 @@ namespace Renault_BT6
         private void SetCellVoltageOrder()
         {
             LogState(LogType.Info, "MES Cell voltage Order : " + (mes_cv_order == true ? "NORMAL" : "REVERSE"));
-            LogState(LogType.Info, "NAMNYEON : " + (mes_cv_order == true ? "NORMAL" : "REVERSE"));
+            LogState(LogType.Info, "NAMNYEONXZZZZZ : " + (mes_cv_order == true ? "NORMAL" : "REVERSE"));
 
             if (!mes_cv_order)
             {

@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-D:\LastSrc\EOL_Inspection_221110_1(DCIR_HIPOT)\Renault_BT6\obj\Debug\
+D:\sdfsdf\EOL_Inspection_221111_2(DCIR_HIPOT)\Renault_BT6\obj\Debug\
 Renault_BT6
 none
 false
 DEBUG;TRACE
-D:\LastSrc\EOL_Inspection_221110_1(DCIR_HIPOT)\Renault_BT6\App.xaml
+D:\sdfsdf\EOL_Inspection_221111_2(DCIR_HIPOT)\Renault_BT6\App.xaml
 21-245131423
 
-891775349875
-711546069304
+93-2004511423
+18563468737
 MainWindow.xaml;MiniScheduler\ClearcaseUC.xaml;MiniScheduler\LoadingWindow.xaml;MiniScheduler\MainWindow.xaml;MiniScheduler\PatternWindow.xaml;MiniScheduler\TimePicker.xaml;StyleDictionary.xaml;Window\AlarmWindow.xaml;Window\CyclerAlarmWindow.xaml;Window\AmbientTemperatureSpecWindow.xaml;Window\ContinueWindow.xaml;Window\ContinueWindowC727.xaml;Window\DAQWindow.xaml;Window\DeviceCheckWindow.xaml;Window\InspectionSpecWindow_HIPot.xaml;Window\InspectionSpecWindow.xaml;Window\ListWindow.xaml;Window\NextWindow.xaml;Window\PreCheckRetry.xaml;Window\RelayControllerWindow.xaml;Window\RequirePasswordWindow.xaml;
 
-False
+True
 
