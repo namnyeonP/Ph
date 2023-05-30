@@ -1,0 +1,1176 @@
+﻿<Window x:Class="MiniScheduler.PatternWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:MiniScheduler"
+        Title="Step Setting Window" Height="450" Width="850" ResizeMode="NoResize" FontSize="16" WindowStyle="ToolWindow" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Grid.ColumnSpan="6" Margin="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0"/>
+                <ColumnDefinition Width="0"/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="이 전" FontSize="16" Click="PrevClick" FontWeight="Bold" Margin="10,3,3,3" />
+            <Button Grid.Column="1" Content="다 음" FontSize="16" Click="NextClick" Margin="3" FontWeight="Bold"/>
+            
+        </Grid>
+        
+        <TabControl Name="CreateTab" Grid.Row="1" Margin="13">
+            <TabControl.Resources>
+                <Style TargetType="TabItem">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TabItem">
+                                <Grid Name="Panel">
+                                    <ContentPresenter x:Name="ContentSite"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        ContentSource="Header"
+                                        Margin="10,2"/>
+                                </Grid>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="Panel" Property="Background" Value="#FF26D400" />
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="False">
+                                        <Setter TargetName="Panel" Property="Background" Value="White" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.Resources>
+            <TabItem Header=" STEP Setting " FontWeight="SemiBold" Margin="1,0,-1,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <GroupBox Header="Type" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2"  Grid.ColumnSpan="2" Margin="3,3,49,3" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold" >
+                        <UniformGrid Name="typeSP" Rows="3">
+                            <RadioButton GroupName="type" IsChecked="False" Content="Charge" VerticalContentAlignment="Center" VerticalAlignment="Center" Margin="0,1,0,0" Name="isCharge" Checked="charged"/>
+                            <RadioButton GroupName="type" IsChecked="False" Content="Discharge"  VerticalContentAlignment="Center" VerticalAlignment="Center" Name="isDischarge" Checked="discharged"/>
+                            <RadioButton GroupName="type" IsChecked="False" Content="Rest"  VerticalContentAlignment="Center" VerticalAlignment="Center" Name="isRest" Checked="EnableType"/>
+                            <RadioButton GroupName="type" IsChecked="False" Content="Pattern" VerticalContentAlignment="Center" VerticalAlignment="Center" Name="isPattern" Checked="EnableType" Visibility="Collapsed"/>
+                            <RadioButton GroupName="type" IsChecked="False" Content="Loop"  VerticalContentAlignment="Center" VerticalAlignment="Center" Name="isLoop" Visibility="Collapsed" />
+
+                        </UniformGrid>
+                    </GroupBox>
+                    <GroupBox Header="Mode" Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold"  Grid.ColumnSpan="2" Margin="49,3,3,3">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=isLoop, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isRest, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isPattern, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <UniformGrid Name="modeSP" Rows="4">
+                            <RadioButton VerticalAlignment="Center" GroupName="mode" IsChecked="True" Content="None" VerticalContentAlignment="Center" Margin="0,1,0,0"/>
+                            <RadioButton VerticalAlignment="Center" GroupName="mode" IsChecked="False" Content="CC" VerticalContentAlignment="Center" Name="isCC"/>
+                            <RadioButton VerticalAlignment="Center" GroupName="mode" IsChecked="False" Content="CC/CV" VerticalContentAlignment="Center" Name="isCCCV"/>
+                            <RadioButton VerticalAlignment="Center" GroupName="mode" IsChecked="False" Content="CP" VerticalContentAlignment="Center" Name="isCP"/>
+                        </UniformGrid>
+                    </GroupBox>
+                    <GroupBox Header="Cycle 반복 횟수" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4" Margin="5">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=isLoop, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="5*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Label Grid.Column="0" Content="Cycle 반복횟수" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                            <TextBox Name="loopCount" Text="1" VerticalAlignment="Center" Grid.Column="1"   HorizontalContentAlignment="Right" />
+                            <Label Grid.Column="2" Content="회" VerticalAlignment="Center" FontWeight="Bold" />
+
+                            <Label Grid.Column="0" Content="반복 후 행위" VerticalAlignment="Center" HorizontalAlignment="Right"  Grid.Row="1"/>
+                            <ComboBox Name="afterLoopCb" Grid.Column="1" Grid.Row="1" Height="30"    HorizontalContentAlignment="Right" FontSize="18"/>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="STEP Option" Grid.Row="2" Grid.RowSpan="1" Grid.ColumnSpan="2" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold" Visibility="Collapsed">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="4*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="0"/>
+
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Grid.RowSpan="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="3*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="0"/>
+                                    <ColumnDefinition Width="0"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition Height="0"/>
+                                </Grid.RowDefinitions>
+
+                                <Label Grid.Row="0"  Grid.Column="0" Content="Log Write Time : " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" FontSize="12" Padding="0"/>
+                                <TextBox Grid.Row="0" Text="1.0" Name="log_write1_step" VerticalAlignment="Center" Grid.Column="1" HorizontalContentAlignment="Right"  />
+                                <Border Grid.Row="0" BorderBrush="#FF858585" BorderThickness="0,0,0,2" Grid.ColumnSpan="4" Grid.RowSpan="2" Visibility="Collapsed"/>
+
+                                <Label Grid.Row="1"  Grid.Column="0" Content="Log Write Voltage : " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" FontSize="12" Padding="0" Visibility="Collapsed"/>
+                                <TextBox Grid.Row="1" Text="0.000" Name="log_write2_step" VerticalAlignment="Center" Grid.Column="1"  HorizontalContentAlignment="Right" Visibility="Collapsed" />
+
+
+                                <Label Grid.Row="0"  Grid.Column="2" Content="Log Write Current : " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" FontSize="12" Padding="0" Visibility="Collapsed"/>
+                                <TextBox Grid.Row="0" Text="0.000" Name="log_write3_step" VerticalAlignment="Center" Grid.Column="3" HorizontalContentAlignment="Right" Visibility="Collapsed" />
+
+
+                                <Label Grid.Row="1"  Grid.Column="2" Content="Log Write Temp. : " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" FontSize="12" Padding="0" Visibility="Collapsed"/>
+                                <TextBox Grid.Row="1" Text="" Name="log_write4_step" VerticalAlignment="Center" Grid.Column="3" HorizontalContentAlignment="Right" Visibility="Collapsed" />
+
+                            </Grid>
+
+                            <Grid Grid.Row="2" Grid.ColumnSpan="3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.5*"/>
+                                    <ColumnDefinition Width="3*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="2.85*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Label Grid.Row="5" Grid.Column="0" Content="Relay : " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="SemiBold" FontSize="14" Padding="0"/>
+
+                                <Label Content="0/0/0/0/0/0/0/0/0/0/0/0" Grid.Column="1" FontSize="9" VerticalAlignment="Center" Name="relay_step">
+                                    <Label.Style>
+                                        <Style TargetType="Label">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ElementName=useRelay, Path=IsSelected}" Value="True">
+                                                    <Setter Property="IsEnabled" Value="True"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Label.Style>
+                                </Label>
+                                <Button Content="설정" Grid.Column="2" FontSize="13" Margin="3" Padding="0" VerticalAlignment="Center">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ElementName=useRelay, Path=IsSelected}" Value="True">
+                                                    <Setter Property="IsEnabled" Value="True"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <ComboBox Grid.Column="3" FontSize="12" Margin="3" Name="relay_use_step" VerticalAlignment="Center">
+                                    <ComboBoxItem Content="사용안함" IsSelected="True" />
+                                    <ComboBoxItem Content="사용" Name="useRelay"/>
+                                </ComboBox>
+                            </Grid>
+                            <Border Grid.Row="2" BorderBrush="#FF858585" BorderThickness="0,0,0,2" Grid.ColumnSpan="3" />
+                            <Grid Grid.Row="3" Grid.ColumnSpan="3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.5*"/>
+                                    <ColumnDefinition Width="3*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="2.85*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Label Grid.Row="5" Grid.Column="0" Content="Loader : " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="SemiBold" FontSize="14" Padding="0"/>
+
+                                <ComboBox Grid.Column="3" FontSize="12" Margin="2" Name="loader_use_step" VerticalAlignment="Center">
+                                    <ComboBoxItem Content="사용안함" IsSelected="True" />
+                                    <ComboBoxItem Content="사용" Name="useLoader"/>
+                                </ComboBox>
+                                <TextBox Name="loader_value_step" Text="0" VerticalAlignment="Center" Grid.Column="2" HorizontalContentAlignment="Right" FontSize="13">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ElementName=useLoader, Path=IsSelected}" Value="True">
+                                                    <Setter Property="IsEnabled" Value="True"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+                                <ComboBox Grid.Column="1" FontSize="12" Margin="5" VerticalAlignment="Center" Name="loader_mode_step">
+                                    <ComboBoxItem Content="NO" IsSelected="True"/>
+                                    <ComboBoxItem Content="CC"/>
+                                    <ComboBoxItem Content="CV"/>
+                                    <ComboBoxItem Content="CP"/>
+                                    <ComboBox.Style>
+                                        <Style TargetType="ComboBox">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ElementName=useLoader, Path=IsSelected}" Value="True">
+                                                    <Setter Property="IsEnabled" Value="True"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ComboBox.Style>
+                                </ComboBox>
+                            </Grid>
+                            <Border Grid.Row="3" BorderBrush="#FF858585" BorderThickness="0,0,0,2" Grid.ColumnSpan="3" />
+                            <Grid Grid.Row="4" Grid.ColumnSpan="3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="3*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Content="Chiller 조건 설정     " FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <Label Content="온도 :" Grid.Column="1" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                <TextBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Width="40" Text="-100" FontSize="12" Name="chiller_temp_step"  HorizontalContentAlignment="Right"/>
+
+                                <Label Content="유량 :" Grid.Column="2" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                <TextBox Grid.Column="2" VerticalAlignment="Center" Name="chiller_oil_step" HorizontalAlignment="Right" Width="40" Text="0" FontSize="12" HorizontalContentAlignment="Right"/>
+
+                                <Label Content="압력 :" Grid.Column="3" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                <TextBox Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Width="40" Text="0" FontSize="12" Name="chiller_press_step"  HorizontalContentAlignment="Right"/>
+                            </Grid>
+                            <Border Grid.Row="4" BorderBrush="#FF858585" BorderThickness="0,0,0,2" Grid.ColumnSpan="3" />
+                            <GroupBox Header="Chamber 조건 설정" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Grid.RowSpan="2" FontSize="14" BorderThickness="1" BorderBrush="Black" FontWeight="SemiBold"  >
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="105"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Button Grid.Row="1" Content="설정" VerticalAlignment="Center" Grid.Column="2" Grid.ColumnSpan="3"  FontSize="13" />
+                                    <Label Content="설정된 Condition :" Grid.Row="0" FontSize="13" VerticalAlignment="Center"/>
+                                    <Label Grid.Row="0" Name="localChamberCond_Lb" Grid.ColumnSpan="1" Grid.Column="1"  VerticalAlignment="Center" FontWeight="Thin" FontSize="12" Content=" "/>
+                                </Grid>
+                            </GroupBox>
+                            <GroupBox Header="CAN / LIN 조건설정" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="3" Grid.RowSpan="2" FontSize="14" BorderThickness="1" BorderBrush="Black" FontWeight="SemiBold"  >
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="105"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Button Content="설정" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center"  Margin="2" FontSize="13"/>
+                                    <Label Content="설정된 Condition :" Grid.Row="0" FontSize="12" VerticalAlignment="Center"/>
+                                    <Label Grid.Row="0" Name="localCanCond_Lb" Grid.ColumnSpan="1" Grid.Column="1"  VerticalAlignment="Center" FontWeight="Thin" FontSize="12" Content=" "/>
+                                </Grid>
+
+                            </GroupBox>
+                            <GroupBox Header="기준값 항목" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="3" Grid.RowSpan="2" FontSize="14" BorderThickness="1" BorderBrush="Black" FontWeight="SemiBold" >
+                                <Grid >
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="110"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <ComboBox Grid.Row="0" Grid.Column="2"  FontSize="12" Height="22" Name="ratio_cond1_step" >
+                                        <ComboBoxItem Content="사용안함" IsSelected="True" Name="useRatio"/>
+                                        <ComboBoxItem Content="Wh" />
+                                        <ComboBoxItem Content="Ah" />
+                                    </ComboBox>
+                                    <Label Grid.Row="1" Grid.Column="2" Content="비율(%) :" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="12" Padding="0">
+                                        <Label.Style>
+                                            <Style TargetType="Label">
+                                                <Setter Property="IsEnabled" Value="True"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ElementName=useRatio, Path=IsSelected}" Value="True">
+                                                        <Setter Property="IsEnabled" Value="False"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Label.Style>
+                                    </Label>
+                                    <Label Grid.Row="1" Content="스텝이동 : " VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="12" Padding="0">
+                                        <Label.Style>
+                                            <Style TargetType="Label">
+                                                <Setter Property="IsEnabled" Value="True"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ElementName=useRatio, Path=IsSelected}" Value="True">
+                                                        <Setter Property="IsEnabled" Value="False"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Label.Style>
+                                    </Label>
+                                    <TextBox Grid.Row="1" Grid.Column="2" Width="50" Text="50" VerticalAlignment="Center" Padding="0" FontSize="12"  HorizontalAlignment="Right" Name="ratio_cond2_step">
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox">
+                                                <Setter Property="IsEnabled" Value="True"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ElementName=useRatio, Path=IsSelected}" Value="True">
+                                                        <Setter Property="IsEnabled" Value="False"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+                                    <Label Grid.Row="0" Grid.Column="0" Content="기준 사이클 / 스텝 : " VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="12" Padding="0">
+                                        <Label.Style>
+                                            <Style TargetType="Label">
+                                                <Setter Property="IsEnabled" Value="True"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ElementName=useRatio, Path=IsSelected}" Value="True">
+                                                        <Setter Property="IsEnabled" Value="False"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Label.Style>
+                                    </Label>
+                                    <ComboBox Grid.Row="0" Grid.Column="1" FontSize="12" Name="ratio_cond3_step" Margin="1,1,5,1" VerticalAlignment="Center">
+                                        <ComboBox.Style>
+                                            <Style TargetType="ComboBox">
+                                                <Setter Property="IsEnabled" Value="True"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ElementName=useRatio, Path=IsSelected}" Value="True">
+                                                        <Setter Property="IsEnabled" Value="False"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ComboBox.Style>
+                                    </ComboBox>
+                                    <ComboBox Grid.Row="1" Grid.Column="1" FontSize="12"  Name="ratio_cond4_step" Margin="1,1,5,1" VerticalAlignment="Center" >
+                                        <ComboBox.Style>
+                                            <Style TargetType="ComboBox">
+                                                <Setter Property="IsEnabled" Value="True"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ElementName=useRatio, Path=IsSelected}" Value="True">
+                                                        <Setter Property="IsEnabled" Value="False"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ComboBox.Style>
+                                    </ComboBox>
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </GroupBox>
+
+                    <GroupBox Header="Charge Voltage" Grid.Row="0" Grid.Column="3" Grid.ColumnSpan="2" Grid.RowSpan="2" Margin="5" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=isPattern, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isLoop, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isDischarge, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isCharge, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                    <!--<DataTrigger Binding="{Binding ElementName=isCC, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isCP, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>-->
+                                    <DataTrigger Binding="{Binding ElementName=isRest, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="5*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                            </Grid.RowDefinitions>
+                            <TextBox Name="voltage_step" VerticalAlignment="Center" Grid.Column="0" HorizontalAlignment="Right" Width="80" HorizontalContentAlignment="Center" />
+                            <Label Grid.Column="2" Content="V" VerticalAlignment="Center" FontWeight="Bold" Grid.Row="1"/>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="Discharge Voltage" Grid.Row="0" Grid.Column="3" Grid.ColumnSpan="2" Grid.RowSpan="2" Margin="5" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=isPattern, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isLoop, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isDischarge, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isCharge, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <!--<DataTrigger Binding="{Binding ElementName=isCC, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isCP, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>-->
+                                    <DataTrigger Binding="{Binding ElementName=isRest, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="5*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                            </Grid.RowDefinitions>
+                            <TextBox Name="disvoltage_step" VerticalAlignment="Center" Grid.Column="0" HorizontalAlignment="Right" Width="80" HorizontalContentAlignment="Center" Grid.Row="1"/>
+                            <Label Grid.Column="2" Content="V" VerticalAlignment="Center" FontWeight="Bold" Grid.Row="1"/>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="Current" Grid.Row="0" Grid.Column="5" Grid.ColumnSpan="2" Margin="5" Grid.RowSpan="2" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold" >
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=isPattern, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isLoop, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isCP, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isRest, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="5*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                            </Grid.RowDefinitions>
+                            <TextBox Name="current_step"  VerticalAlignment="Center" Grid.Column="0" HorizontalAlignment="Right" Width="80" HorizontalContentAlignment="Center" Grid.Row="1"/>
+                            <Label Grid.Column="2" Content="A" VerticalAlignment="Center" FontWeight="Bold" Grid.Row="1"/>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="Power" Grid.Row="0" Grid.Column="7" Grid.ColumnSpan="2" Margin="5" Grid.RowSpan="2" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=isPattern, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isLoop, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isCC, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isCCCV, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=isRest, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="5*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                            </Grid.RowDefinitions>
+                            <TextBox  Name="power_step"  VerticalAlignment="Center" Grid.Column="0" HorizontalAlignment="Right" Width="80" HorizontalContentAlignment="Center" Grid.Row="1"/>
+                            <Label Grid.Column="2" Content="W" VerticalAlignment="Center" FontWeight="Bold" Grid.Row="1"/>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="저항" Grid.Row="0" Grid.Column="4" Margin="5" Visibility="Collapsed">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="5*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                            </Grid.RowDefinitions>
+                            <Label Grid.Column="0" Content="" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" Grid.Row="1"/>
+                            <TextBox Name="impedance_cycle"   VerticalAlignment="Center" Grid.Column="1" HorizontalAlignment="Right" Width="100" HorizontalContentAlignment="Right" Grid.Row="1"/>
+                            <Label Grid.Column="2" Content="Ω" VerticalAlignment="Center" FontWeight="Bold" Grid.Row="1"/>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="STEP Complete Condition"  Grid.Row="2" Grid.Column="0" Grid.RowSpan="9" Grid.ColumnSpan="9" Margin="6,5,4,5" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=isLoop, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <ScrollViewer>
+                            <StackPanel Name="clearCaseSP">
+                                <local:ClearcaseUC/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </GroupBox>
+                    <GroupBox Header="패턴 불러오기" Grid.Column="3" Grid.ColumnSpan="10" Grid.RowSpan="2" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold" Margin="6,5,4,5">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=isPattern, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="6*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBox Grid.ColumnSpan="3" Grid.Row="1" Name="innerTb" ScrollViewer.VerticalScrollBarVisibility="Visible" FontSize="14"/>
+                            <TextBox  Text="C:\" IsEnabled="False" Name="routeTb" FontSize="14" VerticalContentAlignment="Center"  IsReadOnly="True"/>
+                            
+                        </Grid>
+
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header=" Step Safety " FontWeight="SemiBold" Visibility="Visible">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <GroupBox Header="STEP SAFETY COND1" Grid.Row="0" Grid.RowSpan="6" Grid.ColumnSpan="1" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="0"/>
+                                <RowDefinition Height="0"/>
+                            </Grid.RowDefinitions>
+                            <Label Grid.Column="0" Content="Voltage High Limit" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Name="VoMax_step" VerticalAlignment="Center" Grid.Column="1" Text="0.000"   HorizontalContentAlignment="Right" />
+                            <Label Grid.Column="2" Content="V" VerticalAlignment="Center" FontSize="10" />
+                            <Border Grid.Row="0" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label Grid.Column="0" Content="Voltage Low Limit" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" Grid.Row="1"/>
+                            <TextBox   Name="VoMin_step" VerticalAlignment="Center" Grid.Column="1" Text="0.000"  HorizontalContentAlignment="Right" Grid.Row="1"/>
+                            <Label Grid.Column="2" Content="V" VerticalAlignment="Center" FontSize="10" Grid.Row="1"/>
+                            <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label Grid.Row="2" Grid.Column="0" Content="Current High Limit" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="2" Name="CuMax_step"   VerticalAlignment="Center" Grid.Column="1" Text="0.000"  HorizontalContentAlignment="Right" />
+                            <Label Grid.Row="2" Grid.Column="2" Content="A" VerticalAlignment="Center" FontSize="10" />
+                            <Border Grid.Row="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label Grid.Row="3" Grid.Column="0" Content="전류 최소" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" />
+                            <TextBox Grid.Row="3" Name="CuMin_step"   VerticalAlignment="Center" Grid.Column="1"  Text="0.000" HorizontalContentAlignment="Right" />
+                            <Label Grid.Row="3" Grid.Column="2" Content="A" VerticalAlignment="Center" FontSize="10" />
+                            <Border Grid.Row="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label Grid.Row="4" Grid.Column="0" Content="용량 최대" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="4" Name="CaMax_step"   VerticalAlignment="Center" Grid.Column="1" Text="0.000"  HorizontalContentAlignment="Right" />
+                            <Label Grid.Row="4" Grid.Column="2" Content="Ah" VerticalAlignment="Center" FontSize="10" />
+                            <Border Grid.Row="4" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label Grid.Row="5" Grid.Column="0" Content="전력 최대" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="5" Name="PoMax_step"   VerticalAlignment="Center" Grid.Column="1" Text="0.000"  HorizontalContentAlignment="Right" />
+                            <Label Grid.Row="5" Grid.Column="2" Content="W" VerticalAlignment="Center" FontSize="10" />
+                            <Border Grid.Row="5" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label Grid.Row="6" Grid.Column="0" Content="전력량 최대" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="6" Name="WHMax_step"   VerticalAlignment="Center" Grid.Column="1" Text="0.000" HorizontalContentAlignment="Right" />
+                            <Label Grid.Row="6" Grid.Column="2" Content="Wh" VerticalAlignment="Center" FontSize="10" />
+                            <Border Grid.Row="6" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="7"  Grid.Column="0" Content="Safe Case  " VerticalAlignment="Top" HorizontalAlignment="Right" FontWeight="Bold" FontSize="11" Visibility="Collapsed"/>
+                            <Label  Grid.Row="7"  Grid.Column="0" Content="초과허용수 " VerticalAlignment="Bottom" HorizontalAlignment="Right" FontWeight="Bold" FontSize="11" Visibility="Collapsed"/>
+                            <TextBox Grid.Row="7" Name="Exceed_step" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" Visibility="Collapsed"/>
+
+                            <Label  Grid.Row="7"  Grid.Column="0" Content="MSD 체크" VerticalAlignment="Center"  HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="7" Name="HVIL_step" Grid.Column="1"   VerticalAlignment="Center" Text="0"   HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="7" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="8"  Grid.Column="0" Content="Cell Over Volt" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" />
+                            <TextBox Grid.Row="8" Name="COV_step" Grid.Column="1"   VerticalAlignment="Center"  Text="0"  HorizontalContentAlignment="Right" />
+
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="STEP SAFETY COND 2" Grid.Row="0" Grid.Column="1" Grid.RowSpan="6" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold" Visibility="Collapsed">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="6*"/>
+                                <ColumnDefinition Width="4*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Label Grid.Column="0" Content="셀전압 Max 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Name="CeVoMaxH_step"  VerticalAlignment="Center" Grid.Column="1" Text="0.000"  HorizontalContentAlignment="Right"/>
+                            <Border Grid.Row="0" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="1"  Grid.Column="0" Content="셀전압 Max 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Name="CeVoMaxL_step" Grid.Row="1" Grid.Column="1"   VerticalAlignment="Center"  Text="0.000"  HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="2"  Grid.Column="0" Content="셀전압 Min 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Name="CeVoMinH_step" Grid.Row="2" Grid.Column="1"   VerticalAlignment="Center"  Text="0.000"  HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="3"  Grid.Column="0" Content="셀전압 Min 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Name="CeVoMinL_step" Grid.Row="3" Grid.Column="1"   VerticalAlignment="Center"  Text="0.000"  HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="4"  Grid.Column="0" Content="셀전압 Delta 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="4" Name="CeDeVoMax_step" Grid.Column="1"   VerticalAlignment="Center"  Text="0.000"  HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="4" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="5"  Grid.Column="0" Content="셀전압 Sum 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="5" Name="CeVoSuMax_step" Grid.Column="1"   VerticalAlignment="Center"  Text="0.000"  HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="5" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="6"  Grid.Column="0" Content="셀전압 Sum 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="6" Name="CeVoSuMin_step" Grid.Column="1"   VerticalAlignment="Center"  Text="0.000"  HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="6" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="7"  Grid.Column="0" Content="셀전압 평균 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="7" Name="CeVoAvMax_step" Grid.Column="1"   VerticalAlignment="Center"  Text="0.000"  HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="7" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="8"  Grid.Column="0" Content="셀전압 평균 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="8" Name="CeVoAvMin_step" Grid.Column="1"   VerticalAlignment="Center" Text="0.000"   HorizontalContentAlignment="Right" />
+
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="STEP SAFETY COND 3" Grid.Row="0" Grid.Column="2" Grid.RowSpan="6" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold" Visibility="Collapsed">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="6*"/>
+                                <ColumnDefinition Width="4*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Label Grid.Column="0" Content="셀온도 Max 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox    Name="CeTeMaxH_step" VerticalAlignment="Center" Grid.Column="1" Text="100.0"  HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="0" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="1"  Grid.Column="0" Content="셀온도 Max 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="1" Name="CeTeMaxL_step" Grid.Column="1"   VerticalAlignment="Center"  Text="-100.0"  HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="2"  Grid.Column="0" Content="셀온도 Min 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="2" Name="CeTeMinH_step" Grid.Column="1"   VerticalAlignment="Center" Text="100.0"   HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="3"  Grid.Column="0" Content="셀온도 Min 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="3" Name="CeTeMinL_step" Grid.Column="1"   VerticalAlignment="Center" Text="-100.0"   HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="4"  Grid.Column="0" Content="셀온도 Delta 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="4" Name="CeDeTeMax_step" Grid.Column="1"   VerticalAlignment="Center"  Text="100.0"  HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="4" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="5"  Grid.Column="0" Content="셀온도 Sum 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="5" Name="CeTeSuMax_step" Grid.Column="1"   VerticalAlignment="Center"  Text="100.0"  HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="5" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="6"  Grid.Column="0" Content="셀온도 Sum 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="6" Name="CeTeSuMin_step" Grid.Column="1"   VerticalAlignment="Center"  Text="-100.0"  HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="6" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="7"  Grid.Column="0" Content="셀온도 평균 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="7" Name="CeTeAvMax_step" Grid.Column="1"   VerticalAlignment="Center"  Text="100.0"  HorizontalContentAlignment="Right" />
+                            <Border Grid.Row="7" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label  Grid.Row="8"  Grid.Column="0" Content="셀온도 평균 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="8" Name="CeTeAvMin_step" Grid.Column="1"   VerticalAlignment="Center"  Text="-100.0"  HorizontalContentAlignment="Right" />
+
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="유저 패턴 정보" Grid.Row="2" Grid.Column="3" Grid.RowSpan="4" Margin="5" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="4*"/>
+                                <ColumnDefinition Width="4*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Row="0" Grid.Column="0" Content="Pattern ID " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" Visibility="Collapsed"/>
+                            <TextBox Grid.Row="0" Name="pattern_id_step" Text=""  Grid.Column="1" HorizontalAlignment="Right"  HorizontalContentAlignment="Right"  Visibility="Collapsed"/>
+
+                            <Label Grid.Row="0" Grid.Column="0" Content="Pattern Name " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" />
+                            <TextBox Grid.Row="0" Name="pattern_name_step" Text="" VerticalAlignment="Center" Grid.Column="1" HorizontalContentAlignment="Right" IsEnabled="False"/>
+                            <Border Grid.Row="0" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label Grid.Row="1" Grid.Column="0" Content="Time Method" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" />
+                            <TextBox Grid.Row="1" Name="time_method_step" Text="" VerticalAlignment="Center" Grid.Column="1" HorizontalContentAlignment="Right" IsEnabled="False"/>
+                            <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label Grid.Row="2" Grid.Column="0" Content="Output Mode" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Row="2" Name="output_mode_step" Text="" VerticalAlignment="Center" Grid.Column="1" HorizontalContentAlignment="Right" IsEnabled="False" />
+                            <Border Grid.Row="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label Grid.Row="3" Grid.Column="0" Content="Time " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" />
+                            <TextBox Grid.Row="3" Name="time_step" Text="" VerticalAlignment="Center" Grid.Column="1"  HorizontalContentAlignment="Right" IsEnabled="False"/>
+                            <Border Grid.Row="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label Grid.Row="4" Grid.Column="0" Content="Output " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" />
+                            <TextBox Grid.Row="4" Name="output_step" Text="" VerticalAlignment="Center" Grid.Column="1"  HorizontalContentAlignment="Right" IsEnabled="False"/>
+                            <Border Grid.Row="4" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label Grid.Row="5" Grid.Column="0" Content="CURR Limit Charge" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" FontSize="12"/>
+                            <TextBox Grid.Row="5" Name="curr_limit_charge_step" Text="" VerticalAlignment="Center" Grid.Column="1"   HorizontalContentAlignment="Right" IsEnabled="False"/>
+                            <Border Grid.Row="5" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label Grid.Row="6" Grid.Column="0" Content="CURR Limit Discharge" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" FontSize="12"/>
+                            <TextBox Grid.Row="6" Name="curr_limit_discharge_step" Text="" VerticalAlignment="Center" Grid.Column="1"   HorizontalContentAlignment="Right" IsEnabled="False"/>
+                            <Border Grid.Row="6" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+
+                            <Label Grid.Row="7" Grid.Column="0" Content="Pattern Address " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" />
+                            <TextBox Grid.Row="7" Name="pattern_fullAddr_step" Text="" VerticalAlignment="Center" Grid.Column="1" HorizontalContentAlignment="Right" IsEnabled="False"/>
+                            <Border Grid.Row="7" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="3"/>
+                        </Grid>
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=isPattern, Path=IsChecked}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                    </GroupBox>
+                    <GroupBox Header="Step 순서 설정" Grid.Row="0" Grid.RowSpan="2" Grid.Column="3" Margin="5" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold" Visibility="Collapsed">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="5*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="Cycle " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" Grid.Row="0" />
+                            <TextBox Name="cycle_cycle" Text="1" VerticalAlignment="Center" Grid.Column="1"  HorizontalContentAlignment="Center" Grid.Row="0" Margin="30,0" />
+                            <Label Grid.Column="0" Content="Step " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" Grid.Row="1"/>
+                            <TextBox Name="step_cycle" Text="1" VerticalAlignment="Center" Grid.Column="1"  HorizontalContentAlignment="Center" Grid.Row="1" Margin="30,0"/>
+                        </Grid>
+                    </GroupBox>
+
+                </Grid>
+            </TabItem>
+            <TabItem Header=" 공통 Cycle 종료 및 안전조건 " FontWeight="SemiBold" Visibility="Collapsed">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Grid.RowSpan="3" Grid.ColumnSpan="2" >
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <GroupBox Header="CYCLE FINISH CONDITION" Grid.Row="0" Grid.Column="0" Grid.RowSpan="7" Margin="0,0,10,0" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="6*"/>
+                                        <ColumnDefinition Width="4*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition Height="30"/>
+                                        <RowDefinition Height="30"/>
+
+                                    </Grid.RowDefinitions>
+
+                                    <Label Grid.Row="0"  Grid.Column="0" Content="Log Write-Time " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"  Padding="0"/>
+                                    <TextBox Grid.Row="0" Text="0.0" Name="log_write1_cycle" VerticalAlignment="Center" Grid.Column="1" Grid.ColumnSpan="2"  HorizontalContentAlignment="Right"  />
+                                    <Border Grid.Row="0" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label Grid.Row="1"  Grid.Column="0" Content="Log Write-Volt " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"  Padding="0"/>
+                                    <TextBox Grid.Row="1" Text="0.000" Name="log_write2_cycle" VerticalAlignment="Center" Grid.Column="1" Grid.ColumnSpan="2"  HorizontalContentAlignment="Right"  />
+                                    <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label Grid.Row="2"  Grid.Column="0" Content="Log Write-Curr " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" Padding="0"/>
+                                    <TextBox Grid.Row="2" Text="0.000" Name="log_write3_cycle" VerticalAlignment="Center" Grid.Column="1" Grid.ColumnSpan="2"  HorizontalContentAlignment="Right"  />
+                                    <Border Grid.Row="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label Grid.Row="3"  Grid.Column="0" Content="Log Write-Temp " VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"  Padding="0"/>
+                                    <TextBox Grid.Row="3" Text="" Name="log_write4_cycle" VerticalAlignment="Center" Grid.Column="1" Grid.ColumnSpan="2"  HorizontalContentAlignment="Right"  />
+                                    <Border Grid.Row="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="4"  Grid.Column="0" Content="Loop Count(최소 1)" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="4" Name="loop_count_cycle" Grid.Column="1" Text="1"  VerticalAlignment="Center"    HorizontalContentAlignment="Right" />
+                                    <Border Grid.Row="4" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="5"  Grid.Column="0" Content="Goto Cycle" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="5" Name="goto_cycle" Grid.Column="1" Text="0"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" />
+                                    <Border Grid.Row="5" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="6"  Grid.Column="0" Content="Goto Loop Count" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="6" Name="goto_loop_count_cycle" Grid.Column="1" Text="0"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" />
+                                    <Border Grid.Row="6" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="7"  Grid.Column="0" Content="Goto Next Cycle" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="7" Name="goto_next_cycle" Grid.Column="1" Text="0"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" />
+                                    <Border Grid.Row="7" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="8"  Grid.Column="0" Content="Cycle EndTime" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" Visibility="Collapsed"/>
+                                    <TextBox Grid.Row="8" Name="cycle_end_time_cycle" Grid.Column="1"  Text="0"  VerticalAlignment="Center"    HorizontalContentAlignment="Right" Visibility="Collapsed"/>
+                                    <Border Grid.Row="8" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="8"  Grid.Column="0" Content="Cycle Ah" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="8" Name="cycle_ah_cycle" Grid.Column="1" Text="0"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" />
+
+
+                                    <GroupBox Grid.Row="9" Grid.Column="0" Header="CAN / LIN 조건설정 " Grid.ColumnSpan="2" Grid.RowSpan="2" FontSize="13" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold" Padding="0"  >
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="4*"/>
+                                                <ColumnDefinition Width="4*"/>
+                                                <ColumnDefinition Width="2*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Button Content="설정" Grid.Row="9" Grid.Column="2"  Grid.ColumnSpan="2" Margin="2" FontSize="13" VerticalAlignment="Center"    />
+                                            <Label Content="설정된 Condition :" Grid.Row="10" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                            <Label Grid.Row="10" Name="localCanCondCycle_Lb"  Grid.Column="1"  VerticalAlignment="Center" FontWeight="Thin" FontSize="13" Content=" "/>
+                                        </Grid>
+                                    </GroupBox>
+
+                                </Grid>
+                            </GroupBox>
+                            <GroupBox Header="CYCLE SAFETY COND 1" Grid.Row="0" Grid.Column="1" Grid.RowSpan="7" Margin="10,0,0,0" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="4*"/>
+                                        <ColumnDefinition Width="4*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition Height="0"/>
+                                        <RowDefinition Height="0"/>
+                                    </Grid.RowDefinitions>
+                                    <Label Grid.Column="0" Content="전압 최대" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox  Text="0.000"  Name="VoMax_cycle" VerticalAlignment="Center" Grid.Column="1"   HorizontalContentAlignment="Right" />
+                                    <Border Grid.Row="0" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="1"  Grid.Column="0" Content="전압 최소" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Text="0.000" Grid.Row="1" Name="VoMin_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" />
+                                    <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="2"  Grid.Column="0" Content="전류 최대" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Text="0.000" Grid.Row="2" Name="CuMax_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" />
+                                    <Border Grid.Row="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="3"  Grid.Column="0" Content="전류 최소" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Text="0.000" Grid.Row="3" Name="CuMin_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" />
+                                    <Border Grid.Row="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="4"  Grid.Column="0" Content="용량 최대" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Text="0.000" Grid.Row="4" Name="CaMax_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" />
+                                    <Border Grid.Row="4" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="5"  Grid.Column="0" Content="전력 최대" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Text="0.000" Grid.Row="5" Name="PoMax_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" />
+                                    <Border Grid.Row="5" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="6"  Grid.Column="0" Content="전력량 최대" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Text="0.000" Grid.Row="6" Name="WHMax_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" />
+                                    <Border Grid.Row="6" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="7"  Grid.Column="0" Content="Safe Case  " VerticalAlignment="Top" HorizontalAlignment="Right" FontWeight="Bold" FontSize="12" Visibility="Collapsed"/>
+                                    <Label  Grid.Row="7"  Grid.Column="0" Content="초과허용수 " VerticalAlignment="Bottom" HorizontalAlignment="Right" FontWeight="Bold" FontSize="12" Visibility="Collapsed"/>
+                                    <TextBox Grid.Row="7" Name="Exceed_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" Visibility="Collapsed" />
+
+                                    <Label  Grid.Row="7"  Grid.Column="0" Content="MSD 체크" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" FontSize="12"/>
+                                    <TextBox Text="0" Grid.Row="7" Name="HVIL_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" />
+                                    <Border Grid.Row="7" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="8"  Grid.Column="0" Content="Cell Over Volt" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold" FontSize="12"/>
+                                    <TextBox Text="0" Grid.Row="8" Name="COV_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" />
+                                </Grid>
+                            </GroupBox>
+
+                            <GroupBox Header="CYCLE SAFETY COND 2" Grid.Row="0" Grid.Column="2" Grid.RowSpan="7" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="6*"/>
+                                        <ColumnDefinition Width="4*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Label Grid.Column="0" Content="셀전압 Max 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Name="CeVoMaxH_cycle"   VerticalAlignment="Center" Grid.Column="1"   HorizontalContentAlignment="Right" Text="0.000"/>
+                                    <Border Grid.Row="0" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="1"  Grid.Column="0" Content="셀전압 Max 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Name="CeVoMaxL_cycle" Grid.Row="1" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" Text="0.000"/>
+                                    <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="2"  Grid.Column="0" Content="셀전압 Min 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Name="CeVoMinH_cycle" Grid.Row="2" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" Text="0.000"/>
+                                    <Border Grid.Row="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="3"  Grid.Column="0" Content="셀전압 Min 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Name="CeVoMinL_cycle" Grid.Row="3" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" Text="0.000"/>
+                                    <Border Grid.Row="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="4"  Grid.Column="0" Content="셀전압 Delta 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="4" Name="CeDeVoMax_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" Text="0.000"/>
+                                    <Border Grid.Row="4" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="5"  Grid.Column="0" Content="셀전압 Sum 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="5" Name="CeVoSuMax_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" Text="0.000"/>
+                                    <Border Grid.Row="5" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="6"  Grid.Column="0" Content="셀전압 Sum 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="6" Name="CeVoSuMin_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" Text="0.000"/>
+                                    <Border Grid.Row="6" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="7"  Grid.Column="0" Content="셀전압 평균 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="7" Name="CeVoAvMax_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" Text="0.000"/>
+                                    <Border Grid.Row="7" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="8"  Grid.Column="0" Content="셀전압 평균 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="8" Name="CeVoAvMin_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" Text="0.000"/>
+                                    <Border Grid.Row="8" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                </Grid>
+                            </GroupBox>
+                            <GroupBox Header="CYCLE SAFETY COND 3" Grid.Row="0" Grid.Column="3" Grid.RowSpan="7" FontSize="14" BorderThickness="2" BorderBrush="Black" FontWeight="SemiBold" >
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="6*"/>
+                                        <ColumnDefinition Width="4*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Label Grid.Column="0" Content="셀온도 Max 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox    Name="CeTeMaxH_cycle" VerticalAlignment="Center" Grid.Column="1"   HorizontalContentAlignment="Right" Text="100.0"/>
+                                    <Border Grid.Row="0" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="1"  Grid.Column="0" Content="셀온도 Max 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="1" Name="CeTeMaxL_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right" Text="-100.0" />
+                                    <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="2"  Grid.Column="0" Content="셀온도 Min 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="2" Name="CeTeMinH_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right"  Text="100.0"/>
+                                    <Border Grid.Row="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="3"  Grid.Column="0" Content="셀온도 Min 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="3" Name="CeTeMinL_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right"  Text="-100.0"/>
+                                    <Border Grid.Row="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="4"  Grid.Column="0" Content="셀온도 Delta 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="4" Name="CeDeTeMax_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right"  Text="100.0"/>
+                                    <Border Grid.Row="4" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="5"  Grid.Column="0" Content="셀온도 Sum 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="5" Name="CeTeSuMax_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right"  Text="100.0"/>
+                                    <Border Grid.Row="5" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="6"  Grid.Column="0" Content="셀온도 Sum 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="6" Name="CeTeSuMin_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right"  Text="-100.0"/>
+                                    <Border Grid.Row="6" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="7"  Grid.Column="0" Content="셀온도 평균 상한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="7" Name="CeTeAvMax_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right"  Text="100.0"/>
+                                    <Border Grid.Row="7" BorderBrush="LightGray" BorderThickness="0,0,0,1" Grid.ColumnSpan="2"/>
+
+                                    <Label  Grid.Row="8"  Grid.Column="0" Content="셀온도 평균 하한" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                    <TextBox Grid.Row="8" Name="CeTeAvMin_cycle" Grid.Column="1"   VerticalAlignment="Center"    HorizontalContentAlignment="Right"  Text="-100.0"/>
+
+                                </Grid>
+                            </GroupBox>
+
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+        <Button Grid.Column="1" Content="Apply" FontSize="16" Click="ApplyClick" Margin="3" FontWeight="Bold" Width="100" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right"/>
+        <Button VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,1,5,0" Click="CloseToolWindow" Style="{StaticResource metroStyleCloseBt}" Visibility="Collapsed"/>
+    </Grid>
+</Window>

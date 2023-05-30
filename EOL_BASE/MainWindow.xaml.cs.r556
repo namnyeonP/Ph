@@ -1,0 +1,2599 @@
+﻿
+using EOL_BASE.모듈;
+using EOL_BASE.윈도우;
+using EOL_BASE.클래스;
+using Microsoft.Win32;
+using MiniScheduler;
+using Peak.Can.Basic;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+
+
+
+namespace EOL_BASE
+{
+
+    #region Enum
+
+    public enum DSPType
+    {
+        DSP_28335=0,
+        DSP_28377=1,
+        DSP_28377_SDI=2
+    }
+
+    public enum LogType
+    {
+        Info = 0,
+        Fail = 1,
+        Success = 2,
+        Pass = 3,
+        NG = 4,
+        TEST = 5,
+        CAN = 6,
+        EMERGENCY = 7,
+        RESPONSE = 8,
+        REQUEST = 9,
+        MANUALCONDITION = 10,
+        PLC_RECV = 11,
+        PLC_SEND = 12,
+    }
+
+
+    public enum CMD
+    {
+        INPUT_MC_ON,
+        OUTPUT_MC_ON,
+        CHARGE,
+        DISCHARGE,
+        OUTPUT_MC_OFF,
+        REST,
+        NULL
+    }
+
+    public enum OPMode
+    {
+        READY,
+        CHARGE_CC,
+        CHARGE_CV,
+        DISCHARGE_CC,
+        DISCHARGE_CV,
+        CHARGE_CP,
+        DISCHARGE_CP,
+        NULL
+    }
+
+    public enum RECV_OPMode
+    {
+        READY,
+        READY_TO_INPUT,
+        READY_TO_CHARGE,
+        CHARGE_CC,
+        CHARGE_CV,
+        DISCHARGE_CC,
+        DISCHARGE_CV,
+        CHARGE_CP,
+        DISCHARGE_CP,
+        COMPLETE,
+        NULL
+    }
+
+    public enum BranchMode
+    {
+        CHANNEL1,
+        CHANNEL2
+    }
+
+    #endregion
+
+    /// <summary>
+    /// MainWindow.xaml에 대한 상호 작용 논리
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        SafetyCyclerSetting scs = new SafetyCyclerSetting();
+
+        #region Field
+
+        /// <summary>
+        /// 검사 항목 간 여유 시간
+        /// </summary>
+        int autobtwtick = 50;
+        
+        /// <summary>
+        /// 각종 윈도우 및 모드 변경시 필요 비번
+        /// </summary>
+        public string passWord = "";
+
+        string logaddr = @"C:\Users\Public\EOL_INSPECTION_LOG";
+
+        static string FILE_PATH_INSPECTION_RESULT = "c:\\Logs\\Inspection_result\\";
+
+        /// <summary>
+        /// 자동시작시에 흐르는 시간변수
+        /// </summary>
+        DateTime elapsedtime, nowTime;
+
+        public Thread autoModeThread;
+        public List<Process> totalProcessList = new List<Process>();
+                
+        /// <summary>
+        /// 충방전을 위한 스케줄러 윈도우
+        /// </summary>
+        MiniScheduler.MainWindow mmw;
+
+        public List<Models> modelList = new List<Models>();                
+        public string Barcode = "";
+        public int selectedIndex = -1;
+        
+        public bool isNeedDCIR = true;
+        public bool isMESskip = false;
+        public bool isStop = false; 
+        private bool isManual = false;
+
+        private delegate void ReadDelegateHandler();
+
+        public List<CellDetail> cellDetailList = new List<CellDetail>();
+        public List<OcvDetail> ocvDetailList = new List<OcvDetail>();
+        public List<string> dtcList = new List<string>();
+
+        AmbientTemperatureSpecWindow atsw = new AmbientTemperatureSpecWindow();
+        AmbientTempSetting setting = new AmbientTempSetting();
+
+        /// <summary>
+        /// BMS와 데이터 통신 시 해당 리스트에 계속 새로고침된다.
+        /// </summary>
+        public Dictionary<string, ReceiveType> bmsList = new Dictionary<string, ReceiveType>();
+
+        public static string _BARCODE = "Barcode Reading";
+
+        [DllImport("kernel32")]
+        private static extern long WritePrivateProfileString(string section, string key, string val, string filePath);
+        [DllImport("kernel32")]
+        private static extern int GetPrivateProfileString(string section, string key, string def, StringBuilder retVal, int size, string filePath);
+
+        Dictionary<string, List<TestItem>> sdic = new Dictionary<string, List<TestItem>>();
+        
+        public CChroma chroma;
+        public CCycler cycler;
+        public CNhtRS232_Receiver temps;
+        public CRelay_Receiver relays;
+        public CLambdaPower becm_power;
+        public CLambdaPower pump_power;
+        private CMES MES;
+        public CKeysightDMM keysight;
+        public CDAQ daq;
+        public CPLC plc;
+        public CBMS_CAN Hybrid_Instru_CAN;
+
+        System.Windows.Forms.Timer timetick = new System.Windows.Forms.Timer();
+
+        public int counter_Cycler = 0;
+        public int counter_Cycler_limit = 50000;
+        
+        public string mesIP = "10.32.169.81";
+        public string mesPort = "619";
+        public string dmmIP = "169.254.4.61";
+        public string dmmPort = "5025";
+
+        public string chroma_PortName = "COM3";
+        public string power_PortName1 = "COM9";
+        public string power_PortName2 = "COM8";
+        public string nht_PortName = "COM3";
+
+        public string can_bms = "PCAN_PCI: 1 (41h)";
+        public string can_cycler1 = "PCAN_PCI: 2 (42h)";
+
+        public int INSULATION_RESISTANCE_VOLT = 500;
+        public int INSULATION_RESISTANCE_TIME = 10;
+
+        public string PLC_RECV_ADDRESS = "BA00";
+        public string PLC_SEND_ADDRESS = "BA10";
+        public string PLC_BCRS_ADDRESS = "WA0";
+        public int PLC_LOGICAL_NUMBER = 0;
+
+        //not used
+        public string keysight_PortName = "COM3";        
+        public string daq_PortName = "COM11";
+        public string omega_PortName = "COM11";
+        public string can_cycler2 = "PCAN_USB:FD 8 (58h)";
+        public string can_bms2 = "PCAN_PCI: 2 (42h)";
+
+        #endregion
+        
+        #region Registers
+        public void Counter_Cycler()
+        {
+            string regSubkey = "Software\\EOL_Trigger";
+
+            //Microsoft.Win32.Registry.CurrentUser.DeleteSubKey(regSubkey);   
+
+            RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(regSubkey);
+            //rk.SetValue("Access_DMM", "0");                        
+            var regStr = rk.GetValue("COMMON_Counter_Cycler") as string;
+            var regStr2 = rk.GetValue("COMMON_Counter_Cycler_Limit") as string;
+
+            if (regStr == null)
+            {
+                rk.SetValue("COMMON_Counter_Cycler", "0");
+                counter_Cycler = 0;
+            }
+            else
+            {
+                counter_Cycler = int.Parse(regStr);
+            }
+
+            if (regStr2 == null)
+            {
+                rk.SetValue("COMMON_Counter_Cycler_Limit", "50000");
+                counter_Cycler_limit = 50000;
+            }
+            else
+            {
+                counter_Cycler_limit = int.Parse(regStr2);
+            }
+
+            LogState(LogType.Info, "Cycler Current Count :" + counter_Cycler.ToString());
+        }
+
+        /// <summary>
+        /// 정상적으로 끝난 경우에만 카운터가 올라간다
+        /// </summary>
+        public void SetCounter_Cycler()
+        {
+            string regSubkey = "Software\\EOL_Trigger";
+            RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(regSubkey);
+
+            rk.SetValue("COMMON_Counter_Cycler", counter_Cycler.ToString());
+        }
+
+        public void SetCounter_Cycle_Limit()
+        {
+            string regSubkey = "Software\\EOL_Trigger";
+            RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(regSubkey);
+
+            rk.SetValue("COMMON_Counter_Cycler_Limit", counter_Cycler_limit.ToString());
+        }
+
+        public void SetCEIPathOffset()
+        {
+            string regSubkey = "Software\\EOL_Trigger";
+            RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(regSubkey);
+
+            rk.SetValue("CEI_PATH_OFFSET", ceiPathOffset.ToString());
+        }
+
+        /// <summary>
+        /// 사용중 : true
+        /// 비사용중 : false
+        /// </summary>
+        /// <returns></returns>
+        public bool GetCyclerFlag()
+        {
+            string regSubkey = "Software\\EOL_Trigger";
+
+            RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(regSubkey);
+
+            var regStr = rk.GetValue("CYCLER_USING") as string;
+
+            return regStr == "0" ? false : true;
+        }
+
+        public void SetEnableCyclerFlag()
+        {
+            //this.Dispatcher.BeginInvoke(new Action(() =>
+            //{
+            //    cyclerBlinder.Visibility = System.Windows.Visibility.Collapsed;
+            //}));
+
+            LogState(LogType.Info, "Enable [CYCLER_USING] Flag");
+            string regSubkey = "Software\\EOL_Trigger";
+            RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(regSubkey);
+            rk.SetValue("CYCLER_USING", "1");
+        }
+
+        public void SetDisableCyclerFlag()
+        {
+            //this.Dispatcher.BeginInvoke(new Action(() =>
+            //{
+            //    cyclerBlinder.Visibility = System.Windows.Visibility.Visible;
+            //}));
+
+            LogState(LogType.Info, "Disable [CYCLER_USING] Flag");
+            string regSubkey = "Software\\EOL_Trigger";
+            RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(regSubkey);
+            rk.SetValue("CYCLER_USING", "0");
+        }
+
+        public void SetLocalData()
+        {
+            string regSubkey = "Software\\EOL_Trigger";
+            RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(regSubkey);
+            int cnt = 1;
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_EQUIP_ID", equipID); cnt++;
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_PRODUCT_ID", prodID); cnt++;
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_PROCESS_ID", procID); cnt++;
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_MES_IP", mesIP); cnt++;
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_MES_PORT", mesPort); cnt++;
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_DMM_IP", dmmIP); cnt++;
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_DMM_PORT", dmmPort); cnt++;
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_POWER1_PORT", power_PortName1); cnt++;
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_POWER2_PORT", power_PortName2); cnt++;
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_TEMP_PORT", nht_PortName); cnt++;
+
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_CAN_CYCLER", can_cycler1); cnt++;
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_CAN_CYCLER", can_cycler2); cnt++;
+
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_PLC_RECV_ADDRESS", PLC_RECV_ADDRESS); cnt++;
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_PLC_SEND_ADDRESS", PLC_SEND_ADDRESS); cnt++;
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_PLC_BCRS_ADDRESS", PLC_BCRS_ADDRESS); cnt++;
+            rk.SetValue(position + "_" + cnt.ToString("D2") + "_PLC_LOGICAL_NUMBER", PLC_LOGICAL_NUMBER.ToString()); cnt++;
+
+            //추가 레지스터가 필요하다면, 해당 부분에 추가
+            rk.SetValue("CYCLER_USING", "0");
+            //rk.SetValue("CEI_PATH_OFFSET", "0.2");
+        }
+
+        public void LoadLocalData()
+        {
+            try
+            {
+                string regSubkey = "Software\\EOL_Trigger";
+                RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(regSubkey);
+                this.Title = this.Title + " - " + MODEL_NAME +","+ position + "  (" + lastUpdated + ")";
+
+                int cnt = 1;
+                equipID = rk.GetValue(position + "_" + cnt.ToString("D2") + "_EQUIP_ID") as string; cnt++;
+                prodID = rk.GetValue(position + "_" + cnt.ToString("D2") + "_PRODUCT_ID") as string; cnt++;
+                procID = rk.GetValue(position + "_" + cnt.ToString("D2") + "_PROCESS_ID") as string; cnt++;
+                mesIP = rk.GetValue(position + "_" + cnt.ToString("D2") + "_MES_IP") as string; cnt++;
+                mesPort = rk.GetValue(position + "_" + cnt.ToString("D2") + "_MES_PORT") as string; cnt++;
+                dmmIP = rk.GetValue(position + "_" + cnt.ToString("D2") + "_DMM_IP") as string; cnt++;
+                dmmPort = rk.GetValue(position + "_" + cnt.ToString("D2") + "_DMM_PORT") as string; cnt++;
+                power_PortName1 = rk.GetValue(position + "_" + cnt.ToString("D2") + "_POWER1_PORT") as string; cnt++;
+                power_PortName2 = rk.GetValue(position + "_" + cnt.ToString("D2") + "_POWER2_PORT") as string; cnt++;
+                nht_PortName = rk.GetValue(position + "_" + cnt.ToString("D2") + "_TEMP_PORT") as string; cnt++;
+
+                can_cycler1 = rk.GetValue(position + "_" + cnt.ToString("D2") + "_CAN_CYCLER") as string; cnt++;
+                can_cycler2 = rk.GetValue(position + "_" + cnt.ToString("D2") + "_CAN_CYCLER") as string; cnt++;
+
+                PLC_RECV_ADDRESS = rk.GetValue(position + "_" + cnt.ToString("D2") + "_PLC_RECV_ADDRESS") as string; cnt++;
+                PLC_SEND_ADDRESS = rk.GetValue(position + "_" + cnt.ToString("D2") + "_PLC_SEND_ADDRESS") as string; cnt++;
+                PLC_BCRS_ADDRESS = rk.GetValue(position + "_" + cnt.ToString("D2") + "_PLC_BCRS_ADDRESS") as string; cnt++;
+                PLC_LOGICAL_NUMBER = int.Parse(rk.GetValue(position + "_" + cnt.ToString("D2") + "_PLC_LOGICAL_NUMBER") as string);
+
+                //추가 레지스터가 필요하다면, 해당 부분에 추가
+                //ceiPathOffset = double.Parse(rk.GetValue("CEI_PATH_OFFSET").ToString());
+            }
+            catch (Exception ec)
+            {
+                SetLocalData();
+            }
+        }
+
+        #endregion
+
+        #region 값 판정 부분
+
+        public static string _DEVICE_NOT_READY = "DEVICE_NOT_READY";
+        public static string _VALUE_NOT_MATCHED = "VALUE_NOT_MATCHED";
+        public static string _TEMP_OVER = "AMBIENT_TEMP_OVER";
+        public static string _NOT_POS_MSG = "NOT_POSITIVE_MSG";
+        public static string _NOT_NEG_MSG = "NOT_NEGATIVE_MSG";
+        public static string _NOT_MODE_CHANGED = "NOT_MODE_CHANGED";
+
+        /// <summary>
+        /// 값을 비교하고 판정때리는 함수
+        /// 값을 하나만 해서 동일판정일때는 min을 -1로 하고 설정값은 max에 둔다.
+        /// 값이 하나인경우 1이 true, 0이 false로 친다
+        /// </summary>
+        /// <param name="ti"></param>
+        /// <returns></returns>
+        private bool JudgementTestItem(TestItem ti)
+        {
+            this.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (isManual)
+                    blinder.Visibility = System.Windows.Visibility.Hidden;
+            }));
+
+            isProcessingFlag = false;
+            double itemVal = 0;
+
+            //if (ti.Max.ToString() == "0" && ti.Min.ToString() == "0")
+            //{
+            //    ti.Result = "PASS";
+            //    StringBuilder sb = new StringBuilder();
+            //    sb.Append("Test :");
+            //    sb.Append(ti.Name);
+            //    sb.Append(" End - Pass [Value:");
+            //    sb.Append(ti.Value_);
+            //    sb.Append("]");
+            //    this.LogState(LogType.Pass, sb.ToString());
+            //    return true;
+            //}
+
+            if (ti.Value_ == null 
+                || ti.Value_.ToString() == _DEVICE_NOT_READY
+                || ti.Value_.ToString() == _VALUE_NOT_MATCHED
+                || ti.Value_.ToString() == _TEMP_OVER
+                || ti.Value_.ToString() == _NOT_POS_MSG
+                || ti.Value_.ToString() == _NOT_NEG_MSG
+                || ti.Value_.ToString() == _NOT_MODE_CHANGED)
+            {                
+                if(ti.Value_ == null)
+                    ti.Value_ = "NULL";
+
+                ti.Result = "NG";
+                StringBuilder sb = new StringBuilder();
+                sb.Append("Test :");
+                sb.Append(ti.Name);
+                sb.Append(" End - NG [Min:");
+                sb.Append(ti.Min.ToString());
+                sb.Append("][Value:");
+                sb.Append(ti.Value_);
+                sb.Append("][Max:");
+                sb.Append(ti.Max.ToString());
+                sb.Append("]");
+                this.LogState(LogType.NG, sb.ToString());
+
+                if (isSkipNG_)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            if (double.TryParse(ti.Value_.ToString(), out itemVal))
+                ti.Value_ = itemVal = double.Parse(itemVal.ToString("N3"));
+
+            var d_max = 0.0;
+            var d_min = 0.0;
+            var rst1 = double.TryParse(ti.Max.ToString(), out d_max);
+            var rst2 = double.TryParse(ti.Min.ToString(), out d_min);
+
+            if (!rst1 && !rst2)
+            {
+                if (ti.Max.ToString() == ti.Value_.ToString() && ti.Min.ToString() == ti.Value_.ToString())
+                {
+                    ti.Result = "PASS";
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append("Test :");
+                    sb.Append(ti.Name);
+                    sb.Append(" End - Pass [Min:");
+                    sb.Append(ti.Min.ToString());
+                    sb.Append("][Value:");
+                    sb.Append(ti.Value_);
+                    sb.Append("][Max:");
+                    sb.Append(ti.Max.ToString());
+                    sb.Append("]");
+                    this.LogState(LogType.Pass, sb.ToString());
+                    return true;
+                }
+                else
+                {
+                    ti.Result = "NG";
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append("Test :");
+                    sb.Append(ti.Name);
+                    sb.Append(" End - NG [Min:");
+                    sb.Append(ti.Min.ToString());
+                    sb.Append("][Value:");
+                    sb.Append(ti.Value_);
+                    sb.Append("][Max:");
+                    sb.Append(ti.Max.ToString());
+                    sb.Append("]");
+                    this.LogState(LogType.NG, sb.ToString());
+
+                    if (isSkipNG_)
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+            }
+
+            if (d_max >= itemVal && d_min <= itemVal)
+            {
+                ti.Result = "PASS";
+                StringBuilder sb = new StringBuilder();
+                sb.Append("Test :");
+                sb.Append(ti.Name);
+                sb.Append(" End - Pass [Min:");
+                sb.Append(ti.Min.ToString());
+                sb.Append("][Value:");
+                sb.Append(ti.Value_);
+                sb.Append("][Max:");
+                sb.Append(ti.Max.ToString());
+                sb.Append("]");
+                this.LogState(LogType.Pass, sb.ToString());
+                return true;
+            }
+            else
+            {
+                ti.Result = "NG";
+                StringBuilder sb = new StringBuilder();
+                sb.Append("Test :");
+                sb.Append(ti.Name);
+                sb.Append(" End - NG [Min:");
+                sb.Append(ti.Min.ToString());
+                sb.Append("][Value:");
+                sb.Append(ti.Value_);
+                sb.Append("][Max:");
+                sb.Append(ti.Max.ToString());
+                sb.Append("]");
+                this.LogState(LogType.NG, sb.ToString());
+
+                if (isSkipNG_)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region Multi Models
+
+        /// <summary>
+        /// -1:DUMMY
+        /// 0:12S
+        /// 2:14S 
+        /// </summary>
+        public int localTypes = 0;
+
+        public string prodID_12S = "12S_PROD_ID_TEMP";
+        public string prodID_14S = "14S_PROD_ID_TEMP";
+
+        private void sideChangedUp(object sender, MouseButtonEventArgs e)
+        {
+            var lb = sender as Label;
+
+            this.ChangeUIModes(lb.Name.ToString());
+
+            this.LoadList();
+
+            //MES 연결되어있으면 스펙받는다
+            LogToCollect(SpecInitToMES());
+            //MES 연결되어있으면 스펙받는다
+            if (MES.isMESConnected)
+            {
+                ControlSpecInitToMES(MES.GetProcessControlParameterRequest(this.modelList[selectedIndex].EquipId, this.modelList[selectedIndex].ProdId, this.modelList[selectedIndex].ProcId));
+            }
+            else
+            {
+                LogToControl();
+            }
+
+            this.testItemListDg.Items.Refresh();
+        }
+
+        public void AutoMode_change(string mode_name)
+        {
+            //181217 begin인 경우는 MES 스펙 받아올때랑 꼬이는 경우가 있다!!
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                this.ChangeUIModes(mode_name);
+
+                this.LoadList();
+
+                this.testItemListDg.Items.Refresh();
+            }));
+        }
+
+        private void entranceDummyMode(object sender, MouseButtonEventArgs e)
+        {
+            this.AutoMode_change("dummy");
+        }
+
+        public void ChangeUIModes(string mode_name)
+        {
+            switch (mode_name)
+            {
+                case "type1lb":
+                    //type1lb.Background = Brushes.SkyBlue; type2lb.Background = Brushes.Gray; type3lb.Background = Brushes.Gray; localTypes = 0;
+                    LogState(LogType.Info, "12S Mode");
+                    this.prodTb.Text = prodID_12S;
+                    modelList[selectedIndex].ProdId = prodID_12S;
+                    break;
+                //case "type2lb": type2lb.Background = Brushes.SkyBlue; type1lb.Background = Brushes.Gray; type3lb.Background = Brushes.Gray; localTypes = 1;
+                //    LogState(LogType.Info, "GEN1 Mode");
+
+                //    if (lotTb.Text.ToString().Substring(3, 1) == "M")
+                //    {
+                //        this.prodTb.Text = prodID_Gen1;
+                //        modelList[selectedIndex].ProdId = prodID_Gen1;
+                //    }
+                //    else
+                //    {
+                //        this.prodTb.Text = prodID_Gen2;
+                //        modelList[selectedIndex].ProdId = prodID_Gen2;
+                //    }
+
+                //    break;
+                case "type3lb":
+                    //type3lb.Background = Brushes.SkyBlue; type1lb.Background = Brushes.Gray; type2lb.Background = Brushes.Gray; localTypes = 2;
+                    LogState(LogType.Info, "14S Mode");
+                    this.prodTb.Text = prodID_14S;
+                    modelList[selectedIndex].ProdId = prodID_14S;
+
+                    break;
+                case "dummy":
+                    //type1lb.Background = type2lb.Background = type3lb.Background = Brushes.SkyBlue; localTypes = -1;
+                    LogState(LogType.Info, "NG MASTER Mode ");
+                    this.prodTb.Text = prodID_12S;
+                    modelList[selectedIndex].ProdId = prodID_12S;
+                    break;
+
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 로그로 저장될 폴더명
+        /// </summary>
+        string MODEL_NAME = "EOL_BASE";
+
+        /// <summary>
+        /// Cycler DSP Types
+        /// </summary>
+        public DSPType dsp_Type = DSPType.DSP_28335;
+
+        /// <summary>
+        /// last updated date (Recommanded)
+        /// </summary>
+        public string lastUpdated = "181218";
+
+        /// <summary>
+        /// 기본 Equip ID
+        /// </summary>
+        public string equipID = "123412341-12-1";
+
+        /// <summary>
+        /// 기본 Equip ID
+        /// </summary>
+        public string prodID = "1234567890";
+        
+        /// <summary>
+        /// 기본 Equip ID
+        /// </summary>
+        public string procID = "P0000";
+
+        bool isNeedOCVFlag = false;
+        public MainWindow()
+        {
+            InitializeComponent();
+
+            LoadINI(AppDomain.CurrentDomain.BaseDirectory + "config.ini");
+            SetLocalData(); //초기 1회는 셋을 해줘야 함
+            LoadLocalData();
+            
+            InitializeCommonMethods();
+            InitializeSaveFileAddr();
+            Counter_Cycler();
+        }
+
+        void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            SetUI();
+
+            SetModules();           
+
+            LoadList();
+
+            LogToCollect(SpecInitToMES());
+
+            if (MES.isMESConnected)
+            {
+                ControlSpecInitToMES(MES.GetProcessControlParameterRequest(this.modelList[selectedIndex].EquipId, this.modelList[selectedIndex].ProdId, this.modelList[selectedIndex].ProcId));
+            }
+            else
+            {
+                LogToControl();
+            }
+
+            #region Regedit Start
+            var th = new Thread(() =>
+                {
+                    string regSubkey = "Software\\EOL_Trigger";
+
+                    //Microsoft.Win32.Registry.CurrentUser.DeleteSubKey(regSubkey);
+
+                    RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(regSubkey);
+                    //rk.SetValue("Access_DMM", 0);
+                    var regStr = rk.GetValue("ManuallyStart") as string;
+                    while (true)
+                    {
+                        regStr = rk.GetValue("ManuallyStart") as string;
+
+                        Thread.Sleep(100);
+
+                        if (regStr == "1")
+                        {
+                            //시작
+                            this.Dispatcher.Invoke(new Action(() =>
+                                {
+                                    this.AutoMode();
+                                }));
+
+                            Thread.Sleep(3000);
+
+                            rk.SetValue("ManuallyStart", "0");
+                        }
+                    }
+                });
+            th.Start();
+            #endregion
+
+            // 온도보정식 설정
+            atsw.LoadSetting();
+            atsw.LoadSpec(setting);
+
+            // 충방전 안전 스펙 설정 로드
+            // 여기서는 eol_config.ini에 있는 cycler 안전 스펙을 로드하고
+            // 실제 사용하는 부분은 MES에서 스펙을 내려받을 때 비교하도록 설정한다.
+            scs.LoadSafetyCyclerSpec();
+        }
+        
+        private void SetModules()
+        {
+            //181217 mes가 연결되있을 때 릴레이가 초기화가 안되어있으면 터지는거 때문에 수정
+            relays = new CRelay_Receiver(this);
+
+            ThreadPool.QueueUserWorkItem(new WaitCallback(delegate(object state)
+            {
+                MESConnect();
+            }),null);
+
+            ThreadPool.QueueUserWorkItem(new WaitCallback(delegate(object state)
+            {
+                keysight = new CKeysightDMM(this, "169.254.4.61", 5025);
+            }), null);
+
+            ThreadPool.QueueUserWorkItem(new WaitCallback(delegate(object state)
+            {
+                plc = new CPLC(this, PLC_RECV_ADDRESS, PLC_SEND_ADDRESS, PLC_BCRS_ADDRESS, PLC_LOGICAL_NUMBER);
+            }), null);
+
+            ThreadPool.QueueUserWorkItem(new WaitCallback(delegate(object state)
+            {
+                Hybrid_Instru_CAN = new CBMS_CAN(this, can_bms, true);
+                cycler = new CCycler(this, this.can_cycler1);//pcan
+            }), null);
+
+            ThreadPool.QueueUserWorkItem(new WaitCallback(delegate(object state)
+            {
+                temps = new CNhtRS232_Receiver(this);
+            }), null);
+            
+            ThreadPool.QueueUserWorkItem(new WaitCallback(delegate(object state)
+            {
+                daq = new CDAQ(this, daq_PortName);
+            }), null);
+
+            ThreadPool.QueueUserWorkItem(new WaitCallback(delegate(object state)
+            {
+                becm_power = new CLambdaPower(this, power_PortName1, "13.900", "5.000");
+            }), null);
+
+            ThreadPool.QueueUserWorkItem(new WaitCallback(delegate(object state)
+            {
+                chroma = new CChroma(this, this.chroma_PortName);
+            }), null);
+
+            ThreadPool.QueueUserWorkItem(new WaitCallback(delegate(object state)
+            {
+                pump_power = new CLambdaPower(this, power_PortName2, "13.900", "10.000");
+            }), null); 
+
+        }
+
+        private void SetUI()
+        {
+            selectedIndex = 0;
+
+            modelList.Add(new Models()
+            {
+                Number = "0",
+                ProdId = prodID,
+                ProcId = procID,
+                EquipId = equipID,
+                UserId = "EIF",
+                ModelId = MODEL_NAME,
+                LotId = "NOT_LOT_ID"
+            });
+
+            mmw = new MiniScheduler.MainWindow(this);
+            this.totalProcessList = mmw.totalProcessList;
+            
+            this.prodTb.Text = this.modelList[selectedIndex].ProdId;//제품 ID
+            this.procTb.Text = this.modelList[selectedIndex].ProcId;//공정ID
+            this.userTb.Text = this.modelList[selectedIndex].UserId;
+
+            cellDetailList.Clear();
+            cellDetailList.Add(new CellDetail() { TestName = "Init Volt" });
+            cellDetailList.Add(new CellDetail() { TestName = "Discharge" });
+            cellDetailList.Add(new CellDetail() { TestName = "Rest" });
+            cellDetailList.Add(new CellDetail() { TestName = "Charge" });
+            cellDetailList.Add(new CellDetail() { TestName = "Finish Volt" });
+            ClearCellDetailList();
+
+            CellDetailDg.ItemsSource = cellDetailList;
+
+            if (isNeedOCVFlag)
+            {
+                isNeedOCV.Height = new GridLength(80);
+                ocvDetailList.Clear();
+                ocvDetailList.Add(new OcvDetail() { TestName = "OCV Voltage" });
+                ocvDetailList.Add(new OcvDetail() { TestName = "After DCIR Delta Voltage" });
+                ClearOcvDetailList();
+
+                OCVDetailDg.ItemsSource = ocvDetailList;
+            }
+        }
+
+        public void ClearOcvDetailList()
+        {
+            foreach (var item in ocvDetailList)
+            {
+                item.CellVolt_1 = item.CellVolt_2 = item.CellVolt_3 = item.CellVolt_4 = item.CellVolt_5 = item.CellVolt_6 = item.CellVolt_7 = item.CellVolt_8 = 0.0;
+            }
+        }
+        
+        private void InitializeSaveFileAddr()
+        {
+            DirectoryInfo di = new DirectoryInfo(logaddr);
+            if (di.Exists == false)
+            {
+                di.Create();
+            }
+            
+            string @LogDirectory = @"C:\Logs\Inspection_result\" + MODEL_NAME;
+
+            if (!Directory.Exists(@LogDirectory))
+            {
+                Directory.CreateDirectory(@LogDirectory);
+            }
+
+            @LogDirectory = @"C:\Users\Public\EOL_INSPECTION_LOG";
+
+            if (!Directory.Exists(@LogDirectory))
+            {
+                Directory.CreateDirectory(@LogDirectory);
+            }
+        }
+
+        private void InitializeCommonMethods()
+        {
+            bt_pass.Content = "-";
+            bt_pass.Background = Brushes.DarkGray;
+            timetick.Interval = 100;
+            timetick.Tick += ti_Tick;
+            this.Loaded += MainWindow_Loaded;
+            //this.KeyDown += MainWindow_KeyDown;
+            this.Closed += MainWindow_Closed;
+            this.Closing += MainWindow_Closing;
+            this.KeyDown += MainWindow_KeyDown;
+        }
+
+        public string position = "#1";
+
+        /// <summary>
+        /// 2개이상 프로그램을 띄울 때, 구분을 위한 config.ini 파일 생성부
+        /// </summary>
+        /// <param name="url"></param>
+        private void LoadINI(string url)
+        {
+            try
+            {
+                if (!System.IO.File.Exists(url))
+                {
+                    WritePrivateProfileString("Set Position", "#1,#2,#3,#4,#5,#6", "#1", url);
+                    this.LogState(LogType.Info, "Make INI");
+                }
+                else
+                {
+                    StringBuilder temp = new StringBuilder(255);
+
+                    GetPrivateProfileString("Set Position", "#1,#2,#3,#4,#5,#6", "", temp, 255, url);
+                    position = temp.ToString();
+                    //labelPos.Content = position;
+                    this.LogState(LogType.Info, "Load INI");
+                }
+                this.LogState(LogType.Info, "Program Side - " + position);
+            }
+            catch (Exception ec)
+            {
+                this.LogState(LogType.Fail, "Load INI", ec);
+            }
+        }
+
+        /// <summary>
+        /// 메서드 이름으로 실제 코드에서 찾아 동작시키는 메서드.
+        /// 구현된 메서드 이름이 없다면 예외발생
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="objArr"></param>
+        /// <returns></returns>
+        public bool MethodInvoker(string method, object[] objArr)
+        {
+            try
+            {
+                MethodInfo mi = this.GetType().GetMethod(method);
+
+                var ti = objArr[0] as TestItem;
+
+                if (isDummy)
+                {
+                    ti.Value_ = 0;
+                    ti.Result = "PASS";
+                    this.LogState(LogType.NG, "Test :" + ti.Name + " End - DUMMY (VALUE IS 0)");
+                    return true;
+                }
+
+                return (bool)mi.Invoke(this, objArr);
+            }
+            catch (Exception ec)
+            {
+                if (ec is NullReferenceException)
+                {
+                    LogState(LogType.Fail, "MethodInvoker - Not Exist Methods (" + method+")");
+                }
+                else
+                {
+                    LogState(LogType.Fail, "MethodInvoker", ec);
+                }
+                
+            }
+            return false;
+        }
+
+        #region eollist.csv를 실제 메서드로 만들고 이벤트 걸어주는 부분
+
+        /// <summary>
+        /// eolList.csv에서 실제 검사항목으로 불러오는 부분
+        /// </summary>
+        private void LoadList()
+        {
+            try
+            {
+                Encoding encode = System.Text.Encoding.GetEncoding("ks_c_5601-1987");
+                //var arr = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + "eollist.csv", Encoding.Default);
+
+                //181218 여러개 모델일 때 버튼이 새로 추가 안되는 현상 FIX
+                sdic = new Dictionary<string, List<TestItem>>();
+                var li = new List<TestItem>();
+
+                FileStream readData = new FileStream(AppDomain.CurrentDomain.BaseDirectory + "eollist.csv", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+                StreamReader streamReader = new StreamReader(readData, encode);
+
+                int cnt = 0;
+                while (streamReader.Peek() > -1)
+                {
+                    if (cnt == 0)
+                    {
+                        var columnHeaders = streamReader.ReadLine();
+                        cnt++;
+                    }
+                    else
+                    {
+                        #region item parse
+                        var content = streamReader.ReadLine();
+
+                        var ar = content.Split(',');
+                        var groupContent = ar[0];
+
+                        var groupName = ar[0].Replace(" ", "").Replace("(", "_").Replace(")", "_").Replace("-", "_").Replace("/", "").Replace("%", "");
+
+                        var singleContent = ar[1];
+
+                        var singleName = ar[1].Replace(" ", "").Replace("(", "_").Replace(")", "_").Replace("/", "SLASH").Replace("%", "PERCENT").Replace("+", "PLUS").Replace("-", "MINUS").Replace("#", "SHARP").Replace(".", "DOT").Replace("→", "_");
+
+                        var clctItem = ar[2];
+                        var min = ar[3];
+                        var max = ar[4];
+                        var unit = ar[5];
+                        var isUse = ar[8];
+
+                        if (isUse == "0")
+                            continue;
+
+                        var button = new Button();
+                        button.Name = "bt_" + singleName;
+                        button.Style = this.FindResource("manual_bt_s") as Style;
+                        button.Width = 260;
+                        button.FontSize = 12;
+                        button.Content = singleContent;
+                        button.Click += SingleButtonClick;
+
+
+                        var ti = new TestItem();
+                        ti.CLCTITEM = clctItem;
+                        ti.Max = max;
+                        ti.Min = min;
+                        ti.Unit = unit;
+                        ti.No = cnt;
+                        ti.Bt = button;
+                        ti.GroupName = groupName;
+                        ti.Name = singleName;
+                        ti.SingleMethodName = ar[6];
+                        ti.GroupMethodName = ar[7];
+
+                        if (!sdic.ContainsKey(groupContent))
+                        {
+                            li = new List<TestItem>();
+                            li.Add(ti);
+
+                            sdic.Add(groupContent, li);
+
+                        }
+                        else
+                        {
+                            sdic[groupContent].Add(ti);
+                        }
+                        MakeSingleMethodToTextFile(ti.SingleMethodName);
+
+                        cnt++;
+                        #endregion
+                    }
+
+                }
+
+                modelList[selectedIndex].TestItemList.Clear();
+                //181218 여러개 모델일 때 버튼이 새로 추가 안되는 현상 FIX
+                btgrid.Children.Clear();
+                #region Add bt in Grid
+                foreach (var dicItem in sdic)
+                {
+                    var singleGrid = new Grid();
+                    singleGrid.Margin = new Thickness(3);
+                    var comboBox = new ComboBox();
+                    comboBox.FlowDirection = System.Windows.FlowDirection.LeftToRight;
+                    foreach (var initem in dicItem.Value)
+                    {
+                        comboBox.Items.Add(initem.Bt);
+                        modelList[selectedIndex].TestItemList.Add(initem.Bt.Content.ToString(), initem);
+                    }
+
+                    //MakeGroupMethodToTextFile(sdic);
+                    singleGrid.Children.Add(comboBox);
+                    var groupButton = new Button();
+                    groupButton.Content = dicItem.Key;
+                    groupButton.Name = dicItem.Value[0].GroupName;
+                    groupButton.Margin = new Thickness(0, 0, 30, 0);
+                    groupButton.Click += GroupButtonClick;
+                    groupButton.Style = this.FindResource("manual_bt_s") as Style;
+                    try
+                    {
+                        this.RegisterName(groupButton.Name, groupButton);
+                    }
+                    catch(Exception)
+                    {
+
+                    }                    
+                    singleGrid.Children.Add(groupButton);
+
+                    btgrid.Children.Add(singleGrid);
+                }
+                #endregion
+                bt_save = new Button();
+                bt_save.Margin = new Thickness(5);
+                bt_save.Content = "Save Data";
+                bt_save.Name = "bt_save";
+                bt_save.Click += bt_save_Click;
+                bt_save.Style = this.FindResource("manual_bt_s") as Style;
+                bt_save.FontSize = 15;
+                btgrid.Children.Add(bt_save);
+                //<Button Margin="5" Grid.Column="2" Grid.Row="1" Content="Save Data" Name="bt_save" Click="bt_save_Click" Style="{StaticResource manual_bt_s}" FontSize="15"/>
+
+
+                this.testItemListDg.ItemsSource = modelList[selectedIndex].TestItemList;
+            }
+            catch (Exception ec)
+            {
+                LogState(LogType.Fail, "LoadList", ec);
+            }
+        }
+
+        /// <summary>
+        /// 편의를 위해 특정 파일에 메서드를 텍스트로 만들어주는 부분
+        /// </summary>
+        /// <param name="dicItem"></param>
+        private void MakeGroupMethodToTextFile(Dictionary<string, List<TestItem>> dicItem)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            foreach (var methodName in dicItem)
+            {
+                sb.AppendLine("public bool " + methodName.Key + "(TestItem ti)");
+                sb.AppendLine("{");
+                sb.AppendLine("     isProcessingUI(ti);");
+                sb.AppendLine("     ti.Value_ = null;");
+                sb.AppendLine("     return JudgementTestItem(ti);");
+                sb.AppendLine("}");
+                sb.AppendLine("");
+            }
+            File.AppendAllText("D:\\MethodFile.txt", sb.ToString() + "\r\n", Encoding.UTF8);
+        }
+
+        /// <summary>
+        /// 편의를 위해 특정 파일에 메서드를 텍스트로 만들어주는 부분
+        /// </summary>
+        private void MakeSingleMethodToTextFile(string methodName)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("public bool " + methodName + "(TestItem ti)");
+            sb.AppendLine("{");
+            sb.AppendLine("     isProcessingUI(ti);");
+            sb.AppendLine("     ti.Value_ = null;");
+            sb.AppendLine("     return JudgementTestItem(ti);");
+            sb.AppendLine("}");
+            sb.AppendLine("");
+            File.AppendAllText("D:\\MethodFile.txt", sb.ToString() + "\r\n", Encoding.UTF8);
+        }
+        
+        Thread GroupBtThread, SingleBtThread;
+
+        /// <summary>
+        /// 그룹버튼을 눌렀을 때, 해당 그룹이름에 맞는 모든 검사항목을 순차적으로 돌린다.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void GroupButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (GroupBtThread != null)
+                return;
+
+            isStop = ispause = false;
+            string gbtName = (sender as Button).Name.ToString();
+            GroupBtThread = new Thread(() =>
+                {
+                    bool isPass = true;
+                    foreach (var item in modelList[selectedIndex].TestItemList)
+                    {
+                        if (item.Value.GroupName == gbtName)
+                        {
+                            var rst = MethodInvoker(item.Value.SingleMethodName, new object[] { item.Value });
+                            if (!rst)
+                                isPass = false;
+                           
+                            Thread.Sleep(10);//항목간 간격
+                        }
+                    }
+
+                    SetCtrlToPass(isPass, gbtName);
+                    GroupBtThread = null;
+                });
+            GroupBtThread.Start();
+        }
+
+        /// <summary>
+        /// 단일검사시 동작하는 메서드
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SingleButtonClick(object sender, RoutedEventArgs e)
+        {
+            isStop = false;
+            if (SingleBtThread != null)
+                return;
+
+            isStop = ispause = false;
+            string sbtName= (sender as Button).Content.ToString();
+            
+            foreach (var item in modelList[selectedIndex].TestItemList)
+            {
+                if (item.Value.Bt.Content.ToString()== sbtName)
+                {
+                    SingleBtThread = new Thread(() =>
+                        {
+                            MethodInvoker(item.Value.SingleMethodName, new object[] { item.Value });
+
+                            SingleBtThread = null;
+                        });
+                    SingleBtThread.Start();
+                }
+            }
+        }
+        Button bt_save;
+
+        #endregion
+
+
+        /// <summary>
+        /// 전역 키다운 이벤트,
+        /// 기본값은 F2가 충방전 스케줄링 로드
+        /// F3은 오토스타트
+        /// 가끔 안되는 펑션키가 있다(눌러도 이벤트를 안탄다)
+        /// 취향에 맞게 설정~
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.F1:
+                    {
+                        ContinueWindow ct = new ContinueWindow();
+                        ct.maintitle.Content = "EOL INSPECTION";
+                        ct.reason.Content = "ver. " + lastUpdated;
+                        ct.contibt.Content = "OK";
+                        ct.shockLb.Content = "※";
+                        ct.Show();
+                    };break;
+                case Key.F2:
+                    {
+                        mmw.savedCb.IsChecked = false;
+                        mmw.Show();
+                    }; break;
+                case Key.F3: { AutoMode(); }; break;
+                case Key.F4:
+                    {
+                        var th = new Thread(() =>
+                            {
+                                SetCellDetailList(0);
+                                SetCellDetailList(1);
+                                SetCellDetailList(2);
+                                SetCellDetailList(3);
+                                SetCellDetailList(4);
+                            });
+                        th.Start();
+                    }; break;
+                case Key.F5:
+                    {
+                        var th = new Thread(() =>
+                        {
+                            var str = "LGCPE02POL00058580000001";
+
+
+                            var d = Encoding.ASCII.GetBytes(str);
+                            var df = 00;
+
+                            var pol = Encoding.ASCII.GetBytes("POL");
+                            var p = pol;
+
+                            pol = Encoding.ASCII.GetBytes("LGC");
+                            p = pol;
+
+                            str = "706F6C";
+                            var dff = GetHexToStr(str); // >> pol
+
+                            var dd = dff;
+
+                            });
+                        th.Start();
+                    }; break;
+            }
+        }
+        
+        /// <summary>
+        /// 바코드를 읽었을 때 시작
+        /// </summary>
+        public void AutoMode()
+        {
+            //이미 동작중에 다시 시작이 들어온다면 리턴처리
+            if (autoModeThread != null && autoModeThread.IsAlive)
+                return;
+
+            //상세수집항목 비우기
+            foreach (var item in this.modelList[selectedIndex].TestItemList)
+            {
+                item.Value.refValues_.Clear();
+            }
+
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                Barcode = this.lotTb.Text;
+            }));
+
+            LogState(LogType.Info, "START_TEST-------------------------------------------------------", null, false);
+            
+
+            lotTb.Text = modelList[0].LotId = Barcode;
+
+            //검사값 비우기
+            ResetClick(this, null);
+
+            this.time_start_tb.Text = this.time_finish_tb.Text = this.time_elapsed_tb.Text = "";
+            this.testPb.Value = 0;
+            nowTime = DateTime.Now;
+            this.time_start_tb.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+            elapsedtime = new DateTime();
+            this.time_elapsed_tb.Text = elapsedtime.ToString("HH:mm:ss");
+            isMESSkipCb.IsEnabled = manualBt.IsEnabled = false;
+            
+            ThreadStart tstart = new ThreadStart(this.AutoModeStart);
+            autoModeThread = new Thread(tstart);
+            autoModeThread.IsBackground = true;
+            autoModeThread.Start();
+            timetick.Start();
+            this.LogState(LogType.Info, "Auto mode Started");
+        }
+        
+        private void AutoModeStart()
+        {
+            if (plc != null)
+                plc.isSuc = false;
+
+            isStop = false;
+            double testCount = this.modelList[selectedIndex].TestItemList.Count;
+            double progVal = 100.0 / testCount;
+            bool isPass = true;
+
+            //prodId = this.Barcode;//제품 ID
+            //userId = "EIF";
+            //procId = "P8100";//공정ID
+            //eqpId = "W1PBMA101-4-4";
+            this.modelList[selectedIndex].LotId = this.Barcode;// "LGC-WAH;B0011PL230001";
+
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                isMESskip = isMESSkipCb.IsChecked == false ? false : true;
+                this.modelList[selectedIndex].UserId = userTb.Text;
+            }));
+
+
+            LogState(LogType.Info, "Lot ID : " + this.modelList[selectedIndex].LotId + "Proc ID : " + this.modelList[selectedIndex].ProcId + "Prod ID : " + this.modelList[selectedIndex].ProdId + "Equip ID : " + this.modelList[selectedIndex].EquipId);
+
+            #region 착공, 컨트롤스펙, 프로세싱 스펙
+            if (!isMESskip)
+            {
+                if (!MES.isMESConnected)
+                {
+                    this.LogState(LogType.Fail, "MES_NOT_CONNECTED");
+                    SaveData(); Finished(false);
+                    return;
+                }
+
+                //process control param 요청
+                var ctrlparam = MES.GetProcessControlParameterRequest(this.modelList[selectedIndex].EquipId, this.modelList[selectedIndex].ProdId, this.modelList[selectedIndex].ProcId);
+                if (ctrlparam == string.Empty)
+                {
+                    this.LogState(LogType.Fail, "MES_ProcessControlParameterRequest");
+                    SaveData(); Finished(false,false);
+                    return;
+                }
+                ControlSpecInitToMES(ctrlparam);
+                
+                //들어온 컨트롤 스펙으로 충방전 스케줄 리프레싱
+                SetCyclerStepToMESData(0);
+
+                //processing spec 요청
+                this.Dispatcher.Invoke(new Action(() =>
+                {
+                    this.LogToCollect(SpecInitToMES());
+                }));
+                
+                //착공보고
+                if (MES.StartJobInsp(this.modelList[selectedIndex].LotId, this.modelList[selectedIndex].ProcId, this.modelList[selectedIndex].EquipId, this.modelList[selectedIndex].UserId) == "NG") //OK일때 시작
+                {
+                    this.LogState(LogType.Fail, "MES_StartJobInsp");
+                    SaveData(); Finished(false,false);
+
+                    if (plc != null)
+                        plc.TestResult(false);
+
+                    return;
+                }
+
+                //MES간 연결이 끝나고 실제 오토모드 켠다.
+                if (plc != null)
+                {
+                    if (!plc.Automode_Flag)
+                    {
+                        plc.Automode(true);
+                    }
+                }
+            }
+            else
+            {
+                this.LogToControl();
+                this.LogToCollect(false);
+            }
+            #endregion
+
+            #region Tests
+
+            ClearCellDetailList();
+            ProgressRefresh(0);
+            
+            foreach (var single in sdic)
+            {
+                //그룹단위로 검사 시작.        
+                foreach (var item in modelList[selectedIndex].TestItemList)
+                {
+                    if (item.Value.GroupName == single.Value[0].GroupName)
+                    {
+                        var rst = MethodInvoker(item.Value.SingleMethodName, new object[] { item.Value });
+                        
+                        if (!SetCtrlToPass(rst, item.Value.GroupName))
+                        {
+                            isPass = false;
+                        }
+
+                        Thread.Sleep(autobtwtick);
+                        ProgressRefresh(progVal);
+                    }
+                }
+
+                //그룹단위로 끝나고 판단
+                if (!isPass)
+                {
+                    SaveData(); 
+                    Finished(false);
+                    return;
+                }
+            }
+                    
+            ProgressRefresh(100);
+            #endregion
+
+            SaveData();
+            Finished(true);
+            autoModeThread = null;
+        }
+
+        private void MESConnect()
+        {
+            MES = new CMES(this);
+            var rtv = MES.StartConnect();
+            if (rtv == "" && MES.isMESConnected)
+            {
+                this.LogState(LogType.Success, "MES Connected");
+
+                this.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    isMESSkipCb.IsChecked = false;
+                }));
+            }
+            else
+            {
+                this.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    isMESSkipCb.IsChecked = true;
+                }));
+                //this.LogState(LogType.Fail, "MES Connect : "+rtv);
+            }
+        }
+        
+        /// <summary>
+        /// 검사종류가 여러개일 때 새로고침 되는 부분
+        /// </summary>
+        public void RefreshToFlags()
+        {
+            this.testItemListDg.ItemsSource = modelList[selectedIndex].TestItemList;
+
+
+            this.prodTb.Text = this.modelList[selectedIndex].ProdId;//제품 ID
+            this.procTb.Text = this.modelList[selectedIndex].ProcId;//공정ID
+            Barcode = this.lotTb.Text = this.modelList[selectedIndex].LotId;// "J9D3-10B759-AB1-170118000001";//" "LGC-WAH;B0011PL230001";
+            this.userTb.Text = this.modelList[selectedIndex].UserId;
+            
+        }
+
+        /// <summary>
+        /// 파라미터로 Test Item을 만든다.
+        /// </summary>
+        /// <param name="clctitem">보고용 수집항목 ID</param>
+        /// <param name="name">검사 항목 이름</param>
+        /// <param name="bt">검사대상 버튼(UI)</param>
+        /// <param name="min">검사하한</param>
+        /// <param name="max">검사상한</param>
+        /// <param name="unit">UI에 표시되는 단위</param>
+        /// <returns></returns>
+        private TestItem MakeTestItem(string clctitem, string name, Button bt, double min, double max, string unit = "")//,DHandler dhandler)
+        {
+            var no = 0;
+            if (modelList[selectedIndex].TestItemList.ContainsKey(name))
+            {
+                var p = modelList[selectedIndex].TestItemList[name];
+                p.Max = max;
+                p.Min = min;
+                p.Name = name;
+                p.No = p.No;
+                p.Bt = bt;
+                p.CLCTITEM = clctitem;
+                p.Unit = unit;
+                return p;
+            }
+            return new TestItem()
+            {
+                CLCTITEM = clctitem,
+                No = no,
+                Name = name,
+                Min = min,
+                Max = max,
+                Bt = bt,
+                Unit = unit
+                //delegate1 = dhandler
+            };
+        }
+
+        #region Events
+
+        void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (MessageBoxResult.OK == MessageBox.Show("Are you sure you want to Quit?", "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Information)) { }
+            else { e.Cancel = true; }
+        }
+
+        private void MES스킵함(object sender, RoutedEventArgs e)
+        {
+            this.lotTb.Background = this.prodTb.Background = this.procTb.Background = Brushes.Red;
+            isMESskip = true;
+            LogState(LogType.Info, "MES Skip");
+            if (relays == null)
+                return;
+
+            relays.RelayOff("IDO_3");
+        }
+
+        private void MES스킵안함(object sender, RoutedEventArgs e)
+        {
+            if (MES.isMESConnected)
+            {
+                this.lotTb.Background = this.prodTb.Background = this.procTb.Background = Brushes.SkyBlue;
+                isMESskip = false;
+                LogState(LogType.Info, "MES Unskip");
+                relays.RelayOn("IDO_3");
+            }
+            else
+            {
+                isMESSkipCb.IsChecked = true;
+                e.Handled = true;
+                relays.RelayOff("IDO_3");
+                LogState(LogType.Fail, "Not Connected to MES");
+            }
+        }
+
+        bool isSkipNG_ = false;
+
+        void ti_Tick(object sender, EventArgs e)
+        {
+            elapsedtime = elapsedtime.AddMilliseconds(100);
+            time_elapsed_tb.Text = elapsedtime.ToString("HH:mm:ss:f");
+        }
+        private void NGSkip(object sender, RoutedEventArgs e)
+        {
+            var rp = new RequirePasswordWindow(this);
+            rp.ShowDialog();
+            if (rp.isOK)
+            {
+                isSkipNG.IsChecked = true;
+                e.Handled = true;
+                isSkipNG_ = true;
+                LogState(LogType.Info, "NG Skip");
+            }
+            else
+            {
+                isSkipNG.IsChecked = false;
+                e.Handled = true;
+                isSkipNG_ = false;
+
+                MessageBox.Show("Not Matched Password", "Info", MessageBoxButton.OK, MessageBoxImage.Stop);
+
+            }
+            rp.Close();
+        }
+
+        /// <summary>
+        /// NG Skip 끌때 MES로부터 스펙을 받아온다.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void NGSkipUnchecked(object sender, RoutedEventArgs e)
+        {
+            isSkipNG.IsChecked = false;
+            e.Handled = true;
+            isSkipNG_ = false;
+            LogState(LogType.Info, "NG Unkip");
+            //processing spec 요청
+            LogToCollect(SpecInitToMES());
+            //process control param 요청
+            var ctrlparam = MES.GetProcessControlParameterRequest(this.modelList[selectedIndex].EquipId, this.modelList[selectedIndex].ProdId, this.modelList[selectedIndex].ProcId);
+            if (ctrlparam != string.Empty)
+            {
+                ControlSpecInitToMES(ctrlparam);
+            }
+            else
+            {
+                LogToControl();
+            }
+        }
+
+
+        public DetailItems MakeDetailItem(string key, string data = "")
+        {
+            var dti = new DetailItems() { Key = key };
+            dti.Reportitems.Add(data);
+            return dti;
+        }
+
+        public bool isCLOSED = false;
+
+        void MainWindow_Closed(object sender, EventArgs e)
+        {
+            isCLOSED = true;
+
+            try
+            {
+                
+
+
+                this.LogState(LogType.Success, "User Closed");
+            }
+            catch (Exception ec)
+            {
+                this.LogState(LogType.Fail, "User Closed", ec);
+            }
+
+            Thread.Sleep(500);
+            System.Environment.Exit(0);
+        }
+
+
+        bool isAutoScr = true;
+        private void autoscrChecked(object sender, RoutedEventArgs e)
+        {
+            isAutoScr = true;
+        }
+
+        private void autoscrUnchecked(object sender, RoutedEventArgs e)
+        {
+            isAutoScr = false;
+        }
+
+        private void bt_save_Click(object sender, RoutedEventArgs e)
+        {
+            SaveData();
+        }
+
+        private void ProgressRefresh(double progVal)
+        {
+
+            this.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (progVal == 0)
+                    this.testPb.Value = 0;
+                else if (progVal == 100)
+                    this.testPb.Value = 100;
+                else
+                    this.testPb.Value += progVal;
+            }));
+
+            if (ispause)
+            {
+                LogState(LogType.Info, "Pause");
+            }
+
+            bool isg = false;
+            while (ispause)
+            {
+                isg = true;
+            }
+            if (isg)
+            {
+                LogState(LogType.Info, "Resume");
+            }
+
+        }
+
+        private void ResetClick(object sender, RoutedEventArgs e)
+        {
+            isStop = ispause = false;
+            bt_pass.Content = "-";
+            bt_pass.Background = Brushes.DarkGray;
+            ProgressRefresh(0);
+            this.time_start_tb.Text = this.time_finish_tb.Text = this.time_elapsed_tb.Text = "";
+            this.bmsList.Clear();//ksw
+            bt_save.Background = resetBt.Background;
+
+            foreach (var item in btgrid.Children)
+            {
+                if (item is Grid)
+                {
+                    var chitem = (item as Grid).Children;
+                    foreach (var item1 in chitem)
+                    {
+                        if (item1 is Button)
+                        {
+                            var it = item1 as Button;
+                            it.Background = resetBt.Background;
+                        }
+
+                        if (item1 is ComboBox)
+                        {
+                            var ot = item1 as ComboBox;
+                            foreach (var ott in ot.Items)
+                            {
+                                var it = ott as Button;
+                                it.Background = resetBt.Background;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            foreach (var item in modelList[selectedIndex].TestItemList)
+            {
+                item.Value.Value_ = null;
+                item.Value.Result = "";
+                item.Value.refValues_.Clear();
+            }
+
+            ClearCellDetailList();
+
+        }
+
+        private void InspectionSpecClick(object sender, RoutedEventArgs e)
+        {
+            var rp = new RequirePasswordWindow(this);
+            rp.ShowDialog();
+            if (rp.isOK)
+            {
+                var ins = new InspectionSpecWindow(this);
+                ins.Show();
+            }
+            else
+            {
+                MessageBox.Show("Not Matched Password", "Info", MessageBoxButton.OK, MessageBoxImage.Stop);
+            }
+            rp.Close();
+
+        }
+
+        //기본 오토상태
+        private void manualBt_Click(object sender, RoutedEventArgs e)
+        {
+            var rp = new RequirePasswordWindow(this);
+            rp.ShowDialog();
+            if (rp.isOK)
+            {
+                bt_pass.Background = Brushes.DarkGray;
+                bt_pass.Content = "-";
+                isManual = !isManual;
+                ResetClick(this, null);
+
+                isMESskip = isMESSkipCb.IsChecked == false ? false : true;
+
+                if (isManual)
+                {
+                    //isSkipNG.IsEnabled = true;
+                    labelA.Background = Brushes.Gray;
+                    labelM.Background = Brushes.SkyBlue;
+
+                    relayConBt.IsEnabled = dtcClearBt.IsEnabled = resetBt.IsEnabled = cyclerBt.IsEnabled = specBt.IsEnabled = true;
+                    blinder.Visibility = Visibility.Collapsed;
+
+                    isMESSkipCb.IsChecked = true;
+                    LogState(LogType.Info, "---Switched to Manual mode---");
+                }
+                else
+                {
+                    //isSkipNG.IsChecked = isSkipNG_ = false;
+                    //isSkipNG.IsEnabled = false;
+                    labelA.Background = Brushes.SkyBlue;
+                    labelM.Background = Brushes.Gray;
+                    relayConBt.IsEnabled = dtcClearBt.IsEnabled = resetBt.IsEnabled = cyclerBt.IsEnabled = specBt.IsEnabled = false;
+                    blinder.Visibility = Visibility.Visible;
+
+                    isMESSkipCb.IsChecked = false;
+                    LogState(LogType.Info, "---Switched to Auto mode---");
+                }
+            }
+            else
+            {
+                if (!rp.isESC)
+                {
+
+                    MessageBox.Show("Not Matched Password", "Info", MessageBoxButton.OK, MessageBoxImage.Stop);
+                }
+            }
+
+            relays.RelayOff("IDO_2");
+            relays.RelayOn("IDO_1");
+            rp.Close();
+        }
+
+        private void SaveData()
+        {
+            this.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                bt_save.Background = Brushes.Lime;
+
+            }));
+
+            this.Save();
+        }
+
+        public void SetMainCState(string volt)
+        {
+            this.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                this.mainCStateLb1.Content = volt.Replace("_", " ");
+            }));
+        }
+
+        public void SetMainCurrent(string volt)
+        {
+            this.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                this.mainCurrentLb1.Content = volt + " A";
+            }));
+        }
+
+        public void SetMainVoltage(string volt)
+        {
+            this.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                this.mainVoltageLb1.Content = volt + " V";
+            }));
+        }
+
+        /// <summary>
+        /// UI의 로깅창 더블클릭시 표시
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void StateLb_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if ((sender as ListBox).SelectedItem == null)
+                return;
+
+            MessageBox.Show((sender as ListBox).SelectedItem.ToString());
+        }
+
+        private void StopClick(object sender, RoutedEventArgs e)
+        {
+            StopAuto();
+        }
+
+
+        private void PauseClick(object sender, RoutedEventArgs e)
+        {
+            LogState(LogType.Info, "Pause Clicked");
+            ispause_ = !ispause_;
+        }
+
+        private void StartClick(object sender, RoutedEventArgs e)
+        {
+            LogState(LogType.Info, "Start Auto Button Started");
+            AutoMode();
+        }
+
+        private void CyclerSettingsClick(object sender, RoutedEventArgs e)
+        {
+            var rp = new RequirePasswordWindow(this);
+            rp.ShowDialog();
+            if (rp.isOK)
+            {
+                mmw.savedCb.IsChecked = false;
+                mmw.Show();
+            }
+            else
+            {
+                MessageBox.Show("Not Matched Password", "Info", MessageBoxButton.OK, MessageBoxImage.Stop);
+
+            }
+            rp.Close();
+        }
+
+        private void OpenResultClick(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("explorer.exe", @"C:\Logs\Inspection_result\" + MODEL_NAME);
+        }
+
+        private void OpenLogClick(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("explorer.exe", @"C:\Users\Public\EOL_INSPECTION_LOG");
+        }
+
+        private void StateLb_KeyUp_0(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                StateLb.Items.Clear();
+            }
+        }
+
+        private void StateLb_KeyUp_1(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                StateLb1.Items.Clear();
+            }
+        }
+
+        private void StateLb_KeyUp_2(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                StateLb2.Items.Clear();
+            }
+        }
+
+        private void StateLb_KeyUp_3(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                StateLb3.Items.Clear();
+            }
+        }
+
+        #region list double click Event
+        public Point pPoint;
+        public ListWindow cp;
+        public List<doubleValue> tempViewList = new List<doubleValue>();
+        public List<doubleValue> cellViewList = new List<doubleValue>();
+        private void testItemListDg_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (testItemListDg.SelectedIndex == -1)
+                return;
+
+            var item = this.modelList[selectedIndex].TestItemList.ToList()[testItemListDg.SelectedIndex];
+
+            switch (item.Key)
+            {
+                case "Check Delta Temp Sensors(each other) before DCIR":
+                    {
+                        if (tempViewList.Count == 0)
+                            return;
+
+                        if (cp != null && cp.IsLoaded)
+                            cp.Close();
+
+                        cp = new ListWindow(this, tempViewList);
+
+                    }; break;
+                case "Check Delta Temp Sensors(each other) After DCIR":
+                    {
+                        if (tempViewList.Count == 0)
+                            return;
+
+                        if (cp != null && cp.IsLoaded)
+                            cp.Close();
+
+                        cp = new ListWindow(this, tempViewList);
+
+                    }; break;
+                case "Cell Delta Voltage Before DCIR":
+                    {
+                        if (cellViewList.Count == 0)
+                            return;
+
+                        if (cp != null && cp.IsLoaded)
+                            cp.Close();
+
+                        cp = new ListWindow(this, cellViewList);
+
+                    }; break;
+                case "Cell Delta voltage After DCIR":
+                    {
+                        if (cellViewList.Count == 0)
+                            return;
+
+                        if (cp != null && cp.IsLoaded)
+                            cp.Close();
+
+                        cp = new ListWindow(this, cellViewList);
+
+                    }; break;
+                default: return;
+            }
+
+            pPoint = e.GetPosition(this);
+            pPoint = this.PointToScreen(pPoint);
+
+            double diff = System.Windows.SystemParameters.WorkArea.Height - pPoint.Y;
+            if (pPoint.Y > cp.Height && diff < cp.Height)
+                pPoint.Y -= cp.Height;
+
+            diff = System.Windows.SystemParameters.WorkArea.Width - pPoint.X;
+            if (diff < cp.Width)
+                pPoint.X -= cp.Width;
+
+            cp.Top = pPoint.Y;
+            cp.Left = pPoint.X;
+            cp.Focus();
+            cp.Show();
+            cp.Closing -= cp_Closing;
+            cp.Closing += cp_Closing;
+        }
+
+        void cp_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            cp = null;
+            MemoryRefresh();
+        }
+        #endregion
+
+        private void OpenRelayControllerClick(object sender, RoutedEventArgs e)
+        {
+            var rp = new RequirePasswordWindow(this);
+            rp.ShowDialog();
+            if (rp.isOK)
+            {
+                RelayControllerWindow rc = new RelayControllerWindow(this);
+                rc.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show("Not Matched Password", "Info", MessageBoxButton.OK, MessageBoxImage.Stop);
+
+            }
+            rp.Close();
+        }
+
+        private void DTCClearClick(object sender, RoutedEventArgs e)
+        {
+            ClearDTC();
+        }
+
+
+
+        #endregion
+
+        #region Logging / Save data
+        Object obj = new Object();
+
+        public void LogState(LogType lt, string str, Exception ec = null,
+            bool isView = true, bool isSave = true, bool isVol = false, int index = 0, bool isTest = false, string testName = "")
+        {
+            var header = "";
+            switch (lt)
+            {
+                case LogType.Info: header = "[I N F O],"; break;
+                case LogType.Fail: header = "[F A I L],"; break;
+                case LogType.Success: header = "[SUCCESS],"; break;
+                case LogType.Pass: header = "[P A S S],"; break;
+                case LogType.NG: header = "[N     G],"; break;
+                case LogType.TEST: header = "[T E S T],"; break;
+                case LogType.EMERGENCY: header = "[EMERGEN],"; break;
+                case LogType.RESPONSE: header =  "[RESPNSE],"; break;
+                case LogType.REQUEST: header =          "[REQUEST],"; break;
+                case LogType.MANUALCONDITION: header = "[MANCOND],"; break;
+                case LogType.PLC_RECV: header = "[PLCRECV],"; break;
+                case LogType.PLC_SEND: header = "[PLCSEND],"; break;
+                case LogType.CAN: header = ""; isView = false; break;
+            }
+
+            str = str.Replace("\n", "");
+            StringBuilder sb = new StringBuilder();
+            sb.Append(System.DateTime.Now.ToString("HH:mm:ss:fff,"));
+            sb.Append(header);
+            sb.Append(str);
+            sb.Append(ec != null ? (" - " + ec.Message + " : " + ec.StackTrace + ",") : ",");
+            if (isView)
+            {
+                //메인 UI에 비동기로 접근시켜서 로그를 새로고침 시킨다.
+                this.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    //UI에서 5천개이상 데이터가 쌓이면 강제로 비우도록 한다.
+                    if (StateLb.Items.Count > 5000)
+                        StateLb.Items.Clear();
+
+                    try
+                    {
+                        StateLb.Items.Insert(0, sb.ToString());
+                    }
+                    catch (Exception)
+                    {
+                    }
+
+                    switch (lt)
+                    {
+                        case LogType.Success:
+                            {
+                                if (StateLb2.Items.Count > 5000)
+                                    StateLb2.Items.Clear();
+
+                                try
+                                {
+                                    StateLb2.Items.Insert(0, str.ToString());
+                                }
+                                catch (Exception)
+                                {
+                                }
+                            };break;
+                        case LogType.Fail:
+                            {
+                                if (StateLb3.Items.Count > 5000)
+                                    StateLb3.Items.Clear();
+
+                                try
+                                {
+                                    StringBuilder sbb = new StringBuilder(); 
+                                    sbb.Append(str);
+                                    sbb.Append(ec != null ? (" - " + ec.Message + " : " + ec.StackTrace + ",") : ",");
+                                    StateLb3.Items.Insert(0, sbb.ToString());
+                                }
+                                catch (Exception)
+                                {
+                                }
+                            };break;
+                        default:
+                            {
+                                if (StateLb1.Items.Count > 5000)
+                                    StateLb1.Items.Clear();
+
+                                try
+                                {
+                                    StateLb1.Items.Insert(0, str.ToString());
+                                }
+                                catch (Exception)
+                                {
+                                }
+                            };break;
+                    }
+                    
+
+                }));
+            }
+
+            var load = logaddr + "\\" + System.DateTime.Now.ToString("yyyyMMdd");
+
+            if (!Directory.Exists(load))
+            {
+                Directory.CreateDirectory(load);
+            }
+
+            if (isSave)
+            {
+                var tBarcode = Barcode.Replace(":", "_").ToString().Replace(";", "_").ToString().Replace("\r\n", "").ToString();
+                try
+                {
+
+
+                    if (lt == LogType.CAN)
+                    {
+                        //CAN 로그(충방전시에 로그)는 별도폴더에 저장된다.
+                        if (!Directory.Exists(load + "\\CAN"))
+                        {
+                            Directory.CreateDirectory(load + "\\CAN");
+                        }
+
+                        lock (obj)
+                        {
+                            File.AppendAllText(load + "\\CAN\\" + tBarcode + "_" + System.DateTime.Now.ToString("HH") + ".txt", sb.ToString() + "\r\n", Encoding.UTF8);
+                        }
+
+                        return;
+                    }
+                    if (isVol)
+                    {
+                        lock (obj)
+                        {
+                            File.AppendAllText(load + "\\" + Barcode + "_" + System.DateTime.Now.ToString("HH") + "_Cycler" + index.ToString() + ".txt", sb.ToString() + "\r\n", Encoding.UTF8);
+
+                        }
+                    }
+                    else
+                    {
+                        if (isTest)
+                        {
+                            lock (obj)
+                            {
+                                File.AppendAllText(load + "\\" + Barcode + "_" + testName + "_" + System.DateTime.Now.ToString("HH") + ".txt", sb.ToString() + "\r\n", Encoding.UTF8);
+
+                            }
+                        }
+                        else
+                        {
+                            lock (obj)
+                            {
+                                File.AppendAllText(load + "\\" + Barcode + "_" + System.DateTime.Now.ToString("HH") + ".txt", sb.ToString() + "\r\n", Encoding.UTF8);
+
+                            }
+                        }
+                    }
+
+                    //lock (obj)
+                    //{
+
+                    //    File.AppendAllText(load + "\\" + tBarcode + "_" + System.DateTime.Now.ToString("HH") + ".txt", sb.ToString() + "\r\n", Encoding.UTF8);
+                    //}
+                }
+                catch (Exception ecs)
+                {
+                    tBarcode = "NOT_POSSIBLE_FILE_NAME";
+                    File.AppendAllText(load + "\\" + tBarcode + "_" + System.DateTime.Now.ToString("HH") + ".txt", sb.ToString() + "\r\n", Encoding.UTF8);                    
+                }
+
+            }
+        }
+
+
+        private void Save()
+        {
+            string @LogDirectory = FILE_PATH_INSPECTION_RESULT + "\\" + this.modelList[selectedIndex].ModelId;
+
+            if (!Directory.Exists(@LogDirectory))
+            {
+                Directory.CreateDirectory(@LogDirectory);
+            }
+                       
+            var dir = @LogDirectory + "\\" + System.DateTime.Now.ToString("[yyyy-MM-dd]EOL_RESULT") + ".txt";
+            var subdir = @LogDirectory + "\\" + System.DateTime.Now.ToString("[yyyy-MM-dd]EOL_RESULT_FILE_OPENED") + ".txt";
+
+            // 파일이 없다면 최초에 컬럼을 박아넣어야함.
+            if (!File.Exists(dir))
+            {
+                var header = "PASS FAIL,";
+                foreach (var item in this.modelList[selectedIndex].TestItemList)
+                {
+                    header += item.Key + ",";
+                }
+
+                //상세수집항목 컬럼 추가부분
+                foreach (var item in this.modelList[selectedIndex].TestItemList)
+                {
+                    if (item.Value.refValues_.Count != 0)
+                    {
+                        foreach (var refs in item.Value.refValues_)
+                        {
+                            var di = refs as DetailItems;
+
+                            header += di.Key + ",";
+                        }
+                    }
+                }
+
+                header += "StartTime,ElapsedTime";
+                File.AppendAllText(dir, header + "\r\n", Encoding.UTF8);
+            }
+
+            var first = "PASS";
+            foreach (var item in this.modelList[selectedIndex].TestItemList)
+            {
+                if (item.Value.Result != null && item.Value.Result != "PASS")
+                {
+                    first = "NG";
+                }
+            }
+
+            var tail = first + ",";
+
+            StringBuilder sb = new StringBuilder();
+            foreach (var item in this.modelList[selectedIndex].TestItemList)
+            {
+                sb.Append(string.Format("{0}", item.Value.Value_));
+                sb.Append(",");
+            }
+
+            //수집항목 끝에 상세수집 추가하는 부분
+            foreach (var item in this.modelList[selectedIndex].TestItemList)
+            {
+                if (item.Value.refValues_.Count != 0)
+                {
+                    foreach (var ritem in item.Value.refValues_)
+                    {
+                        var dti = ritem as DetailItems;
+                        for (int i = 0; i < dti.Reportitems.Count; i++)
+                        {
+                            sb.Append(string.Format("{0}", dti.Reportitems[i].ToString()));
+                            if (dti.Reportitems.Count != 1)
+                            {
+                                sb.Append("&");
+                            }
+                        }
+                        if (dti.Reportitems.Count != 1)
+                        {
+                            sb.Remove(sb.Length - 1, 1);
+                        }
+                        sb.Append(",");
+                    }
+                }
+            }
+
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                sb.Append(this.time_start_tb.Text);
+                sb.Append(",");
+                sb.Append(this.time_elapsed_tb.Text);
+            }));
+
+            try
+            {
+                File.AppendAllText(dir, tail + sb.ToString() + "\r\n", Encoding.UTF8);
+            }
+            catch (Exception)
+            {
+                this.LogState(LogType.Fail, "Save Data - File is open");
+                File.AppendAllText(subdir, tail + sb.ToString() + "\r\n", Encoding.UTF8);
+            }
+
+
+            this.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                this.LogState(LogType.Info, "Save Data");
+            }));
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 항목이 진행중임을 표시하는 메서드.
+        /// 일시정지일때, 해당부분에 일시정지 무한루프로 걸린다.
+        /// </summary>
+        /// <param name="ti"></param>
+        public void isProcessingUI(TestItem ti)
+        {
+            if (ispause)
+            {
+                LogState(LogType.Info, "Pause");
+            }
+
+            bool isg = false;
+            while (ispause)
+            {
+                isg = true;
+            }
+            if (isg)
+            {
+                LogState(LogType.Info, "Resume");
+            }
+
+            this.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (isManual)
+                    blinder.Visibility = System.Windows.Visibility.Visible;
+            }));
+
+            isProcessingFlag = true;
+            AutoScrolling(ti);
+            //relays.Reset();
+
+            LogState(LogType.Info, "-----------------------------------------------------------------", null, false);
+            LogState(LogType.Info, "Test :" + ti.Name + " Start");
+
+            SetYellow(ti.Bt);
+
+            relays.RelayOff("IDO_1");
+            relays.RelayOn("IDO_2");
+
+
+        }
+
+        private void AutoScrolling(TestItem testItem)
+        {
+            if (!isAutoScr)
+                return;
+
+            var index = GetIndex(this.modelList[selectedIndex].TestItemList, testItem.Name);
+            this.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                testItemListDg.SelectedIndex = index;
+                testItemListDg.ScrollIntoView(testItemListDg.SelectedItem);
+            }));
+        }
+
+        public int GetIndex(Dictionary<string, TestItem> dictionary, string key)
+        {
+            for (int index = 0; index < dictionary.Count; index++)
+            {
+                if (dictionary.Skip(index).First().Value.Name == key)
+                    return index; // We found the item
+            }
+
+            return -1;
+        }
+
+        #region UI 변경 메서드
+
+        private void SetYellow(Button bt)
+        {
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                bt.Background = Brushes.Yellow;
+            }));
+        }
+
+        bool isYellow(Button bt)
+        {
+            bool rtv = false;
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+
+                if (bt.Background == Brushes.Yellow)
+                    rtv = true;
+                else
+                    rtv = false;
+            }));
+            return rtv;
+        }
+
+        bool isProcessingFlag = false;
+
+        private bool SetCtrlToPass(bool isPass, TestItem item, Button bt = null)
+        {
+            //relays.RelayOff("IDO_2");
+            //relays.RelayOn("IDO_1");
+
+            LogState(LogType.Info, "-----------------------------------------------------------------", null, false);
+            bool rtv = false;
+            if (isPass)
+            {
+                this.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (bt != null)
+                        bt.Background = Brushes.Lime;
+                    else
+                        item.Bt.Background = Brushes.Lime;
+                }));
+                rtv = true;
+            }
+            else
+            {
+                this.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (bt != null)
+                        bt.Background = Brushes.Red;
+                    else
+                        item.Bt.Background = Brushes.Red;
+                }));
+            }
+
+            if (isStop)
+                return false;
+
+            return rtv;
+        }
+
+        /// <summary>
+        /// isStop flag 내장
+        /// </summary>
+        /// <param name="isPass"></param>
+        /// <param name="btName"></param>
+        /// <returns></returns>
+        private bool SetCtrlToPass(bool isPass, string btName)
+        {
+            //relays.RelayOff("IDO_2");
+            //relays.RelayOn("IDO_1");
+
+            LogState(LogType.Info, "-----------------------------------------------------------------", null, false);
+            bool rtv = false;
+            if (isPass)
+            {
+                this.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    var bt = (Button)this.FindName(btName);
+                    bt.Background = Brushes.Lime;
+                }));
+                rtv = true;
+            }
+            else
+            {
+                this.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    var bt = (Button)this.FindName(btName);
+                    bt.Background = Brushes.Red;
+                }));
+            }
+
+            if (isStop)
+                return false;
+
+            return rtv;
+        }
+
+        private void Pass(bool isPass)
+        {
+            if (isPass)
+            {
+                bt_pass.Content = "PASS";
+                bt_pass.Background = Brushes.Lime;
+            }
+            else
+            {
+                bt_pass.Content = "NG";
+                bt_pass.Background = Brushes.Red;
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 강제 정지 메서드
+        /// 일시정지 상태를 풀며, NG로 빠지게 한다.
+        /// </summary>
+        public void StopAuto()
+        {
+            LogState(LogType.EMERGENCY, "EMERGENCY STOPPED !!!");
+            ispause = false;
+            isStop = true;
+
+            timetick.Stop();
+        }
+
+        private bool ispause_ = false;
+        ContinueWindow pcw = new ContinueWindow();
+        public bool ispause
+        {
+            get { return ispause_; }
+            set
+            {
+
+                ispause_ = value;
+                if (ispause_)
+                {
+                    this.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        pausebt.IsChecked = true;
+                        pcw = new ContinueWindow();
+                        pcw.maintitle.Content = "PAUSE";
+                        pcw.reason.Content = "Close the Door";
+                        pcw.contibt.Visibility = Visibility.Collapsed;
+                        pcw.Show();
+                    }));
+                }
+                else
+                {
+                    this.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        pausebt.IsChecked = false;
+                        pcw.Close();
+                    }));
+                }
+
+            }
+        }
+        
+
+        private void isdummy(object sender, RoutedEventArgs e)
+        {
+            var rp = new RequirePasswordWindow(this);
+            rp.ShowDialog();
+            if (rp.isOK)
+            {
+                isDummy = true;
+            }
+            else
+            {
+                isDummyCb.IsChecked = false;
+                e.Handled = true;
+                isDummy = false;
+
+                MessageBox.Show("Not Matched Password", "Info", MessageBoxButton.OK, MessageBoxImage.Stop);
+            }
+        }
+
+        private void isNotdummy(object sender, RoutedEventArgs e)
+        {
+            isDummy = false;
+        }
+
+        bool isDummy = false;
+
+        private void CellDetailDg_LayoutUpdated_1(object sender, EventArgs e)
+        {
+
+        }
+
+    }
+}

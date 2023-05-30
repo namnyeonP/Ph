@@ -1,0 +1,207 @@
+﻿<Window x:Class="EOL_BASE.윈도우.InspectionSpecWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="InspectionSpecWindow" Height="850" Width="700" WindowStyle="ToolWindow" ResizeMode="NoResize">
+    <Grid >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="350"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="35"/>
+        </Grid.RowDefinitions>
+        <GroupBox Grid.Row="0" Grid.ColumnSpan="3" Margin="5" Header="Inspection Spec." FontSize="20" Grid.RowSpan="2">
+            <DataGrid AutoGenerateColumns="False" FontWeight="SemiBold" FontSize="13"  SelectionMode="Single" CanUserAddRows="False" Margin="5" Name="testSpecDg" ScrollViewer.VerticalScrollBarVisibility="Visible" SelectionChanged="testSpecDg_SelectionChanged" >
+                <DataGrid.Columns>
+                    <DataGridTextColumn FontWeight="Normal"  Header="No" Binding="{Binding Value.No}" Width="0.7*" IsReadOnly="True" CanUserSort="False" />
+                    <DataGridTextColumn FontWeight="Normal" Header="Name" Binding="{Binding Key}" Width="2*" IsReadOnly="True" CanUserSort="False"/>
+                    <DataGridTextColumn FontWeight="Normal" Header="Min" Binding="{Binding Value.Min}" Width="1.3*" IsReadOnly="True" CanUserSort="False"/>
+                    <DataGridTextColumn FontWeight="Normal" Header="Max" Binding="{Binding Value.Max}" Width="1.3*" IsReadOnly="True" CanUserSort="False"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+        <GroupBox Grid.Column="3" Grid.Row="0" Grid.RowSpan="3" Grid.ColumnSpan="3" Margin="10" Header="Control Spec." FontSize="20" >
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="7*"/>
+                    <ColumnDefinition Width="3*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Margin="0,0,3,0">
+                    <Border Height="5" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+                    <Label Content="MES Settings" HorizontalContentAlignment="Left"/>
+                    <Label Content="Model :" HorizontalContentAlignment="Right" Visibility="Collapsed"/>
+                    <Label Content="Product ID :" HorizontalContentAlignment="Right"/>
+                    <Label Content="Process ID (COMMON) :" HorizontalContentAlignment="Right"/>
+                    <Label Content="User ID (COMMON) :" HorizontalContentAlignment="Right"/>
+                    <Label Content="Equip ID (COMMON) :" HorizontalContentAlignment="Right"/>
+
+                    <Border Height="10" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+
+                    <Label Content="IR Test Settings" HorizontalContentAlignment="Left"/>
+
+                    <Label Content="Voltage Level(V) :" HorizontalContentAlignment="Right" />
+                    <Label Content="Voltage Time(Sec) :" HorizontalContentAlignment="Right" />
+                    <Label Content="Voltage Ramp Up Time(Sec) :" HorizontalContentAlignment="Right"/>
+                    <Label Content="FETCH Cycle Time :" HorizontalContentAlignment="Right"/>
+                    <Label Content="Range(A) :" HorizontalContentAlignment="Right"/>
+                    <Border Height="10" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+
+                    <Label Content="Withstand Test Settings" HorizontalContentAlignment="Left"/>
+                    <Label Content="Voltage Level(V) :" HorizontalContentAlignment="Right" />
+                    <Label Content="Voltage Time(Sec) :" HorizontalContentAlignment="Right" />
+                    <Label Content="Arc Limit(mA) :" HorizontalContentAlignment="Right" />
+                    <Label Content="Arc Detection(0/1) :" HorizontalContentAlignment="Right" />
+                    <Label Content="Rampup Time(Sec) :" HorizontalContentAlignment="Right" />
+                    <Label Content="Falldown Time(Sec) :" HorizontalContentAlignment="Right" />
+
+                    <Border Height="10" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+
+                    <Label Content="Temperature Formula" HorizontalContentAlignment="Left"/>
+                    <Label Content="Cell DCIR Formula 1 :" HorizontalContentAlignment="Right"/>
+                    <Label Content="Cell DCIR Formula 2 :" HorizontalContentAlignment="Right"/>
+                    <Label Content="Module DCIR Formula 1 :" HorizontalContentAlignment="Right"/>
+                    <Label Content="Module DCIR Formula 2 :" HorizontalContentAlignment="Right"/>
+                    <Label Content="Coefficient T :" HorizontalContentAlignment="Right"/>
+                    <Label Content="Coefficient V :" HorizontalContentAlignment="Right"/>
+                    
+
+                    <Border Height="10" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+
+                    <Label Content="Cycler Count :" HorizontalContentAlignment="Right"/>
+
+                    <Label Content="Cycler Count Limit :" HorizontalContentAlignment="Right"/>
+                    <Border Height="10" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+
+                    <Label Content="Line Open" HorizontalContentAlignment="Left"/>
+
+                    <Label Content="Line Open Upper(kOhm) :" HorizontalContentAlignment="Right"/>
+                    <Label Content="Line Open Lower(kOhm) :" HorizontalContentAlignment="Right"/>
+                    <Border Height="10" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+
+                    <Label Content="Line Check" HorizontalContentAlignment="Left"/>
+
+                    <Label Content="Cooling pin connection check limit(Ohm) :" HorizontalContentAlignment="Right" FontSize="10"/>
+
+                    
+                    <!--<Label Content="PWM" HorizontalContentAlignment="Left"/>
+                    <Label Content="Normal" HorizontalContentAlignment="Right"/>
+                    <Label Content="Crash" HorizontalContentAlignment="Right"/>
+                    <Border Height="20" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+
+                    <Label Content="Power 1" HorizontalContentAlignment="Left"/>
+                    <Label Content="Low Volt" HorizontalContentAlignment="Right"/>
+                    <Label Content="High Volt" HorizontalContentAlignment="Right"/>
+                    <Label Content="Normal Volt" HorizontalContentAlignment="Right"/>
+                    <Border Height="20" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+
+                    <Label Content="IR Measurement" HorizontalContentAlignment="Left"/>
+                    <Label Content="Internal Term" HorizontalContentAlignment="Right"/>
+                    <Label Content="External Term" HorizontalContentAlignment="Right"/>
+                    <Border Height="20" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>-->
+
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                    <Border Height="5" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+                    <Label Content=" "/>
+                    <ComboBox Height="20" FontSize="14" Padding="0" Name="ModelTb" HorizontalContentAlignment="Center" Visibility="Collapsed">
+                        <ComboBoxItem Content="Normal " HorizontalContentAlignment="Center" IsSelected="True"/>
+                        <ComboBoxItem Content="Mirror "  HorizontalContentAlignment="Center"/>
+                        <ComboBoxItem Content="Normal "  HorizontalContentAlignment="Center"/>
+                        <ComboBoxItem Content="Mirror "  HorizontalContentAlignment="Center"/>
+                    </ComboBox>
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="prodidTb"/>
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="procidTb"/>
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="useridTb"/>
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="equipTb"/>
+                    <Border Height="10" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+                    <Label Content=" "/>
+
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="irVoltLevelTb" />
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="irVoltTimeTb" />
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="irVoltRampTimeTb" />
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="irFetchCycleTimeTb" />
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="irrangeTb" />
+                    
+                    <Border Height="10" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+                    <Label Content=" "/>
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="wsVoltLeveTb" />
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="wsVoltTimeTb" />
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="wsArcLimitTb" />
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="wsArcDetecTb" />
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="wsRampTimeTb" />
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="wsFallTimeTb" />
+
+                    <Border Height="10" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+                    <Label Content=" "/>
+
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="cellfomu1Tb" />
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="cellfomu2Tb"/>
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="modulefomu1Tb"/>
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="modulefomu2Tb"/>
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="coefficientTTb"/>
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" Name="coefficientVTb"/>
+                    <Border Height="10" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+
+                    <TextBox Text="" Height="20" FontSize="14" Padding="0" Name="cyclerCountTb" IsEnabled="False"/>
+                    <TextBox Text="" Height="20" FontSize="14" Padding="0" Name="cyclerCountLimitTb"/>
+
+                    <Border Height="10" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+                    <Label Content=" "/>
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" x:Name="lineOpenUpper"/>
+                    <TextBox Text="" Height="20" FontSize="12" Padding="0" x:Name="lineOpenLower"/>
+
+                    <Border Height="10" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+                    <Label Content=" "/>
+                    <TextBox Text="" Height="20" FontSize="10" Padding="0" x:Name="lineCheck"/>
+                    <!--<Label Content=" "/>
+                    <TextBox Text="" Height="20" FontSize="14" Padding="0" Name="NormHz"/>
+                    <TextBox Text="" Height="20" FontSize="14" Padding="0" Name="CrashHz"/>
+                    <Border Height="20" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+                    <Label Content=" "/>
+                    <TextBox Text="" Height="20" FontSize="14" Padding="0" Name="lowVolt"/>
+                    <TextBox Text="" Height="20" FontSize="14" Padding="0" Name="highVolt"/>
+                    <TextBox Text="" Height="20" FontSize="14" Padding="0" Name="NormVolt"/>
+                    <Border Height="20" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>
+                    <Label Content=" "/>
+                    <TextBox Text="" Height="20" FontSize="14" Padding="0" Name="intTerm"/>
+                    <TextBox Text="" Height="20" FontSize="14" Padding="0" Name="extTerm"/>
+                    <Border Height="20" BorderBrush="LightGray" BorderThickness="0,0,0,1" Margin="-4,0"/>-->
+
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+        <Grid Visibility="Visible" Grid.Row="2" Grid.ColumnSpan="3">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Label Content="Selected Item : "/>
+            <TextBox Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Name="stb" IsEnabled="False"/>
+            <Button Grid.Column="3" Content="Apply Changes" Click="Button_Click" Margin="4"/>
+            <Label Content="Item's Min : " Grid.Row="1"/>
+            <TextBox Grid.Column="1" VerticalAlignment="Center" Name="mintb" Grid.Row="1"/>
+            <Label Content="Item's Max: " Grid.Row="1" Grid.Column="2"/>
+            <TextBox  VerticalAlignment="Center" Name="maxtb" Grid.Row="1" Grid.Column="3"/>
+        </Grid>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="3" Grid.ColumnSpan="10">
+            <Button Content="Apply" Margin="5" Click="OK_Click" Width="100"/>
+            <Button Content="Cancel"  Margin="5" Click="Cancel_Click" Width="100"/>
+        </StackPanel>
+
+        <!--2018.11.01 jeonhj 외기온도에 따른 저항 기준치 변경-->
+        <Button Content="AmbTempSet" Name="btnAmbTempSet" Click="btnAmbTempSet_Click" Grid.Row="3" Margin="5" />
+    </Grid>
+</Window>
+
+    

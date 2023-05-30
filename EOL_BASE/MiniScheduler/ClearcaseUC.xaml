@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="MiniScheduler.ClearcaseUC"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+            xmlns:window="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
+xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+             xmlns:local="clr-namespace:MiniScheduler"
+             d:DesignHeight="300" d:DesignWidth="300" Height="40">
+    <Border BorderBrush="Gray" BorderThickness="0,0,0,1">
+        <Grid Name="maingrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+            <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" Name="cb" />
+            <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" Name="unvisiblecb" Visibility="Collapsed" />
+            <Label Name="titleLb" Content="종료전압 HIGH" Grid.Column="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" FontSize="12" IsEnabled="{Binding ElementName=cb, Path=IsChecked}"/>
+            <TextBox Name="valueTb" Text="0.000" Grid.Column="2" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" VerticalAlignment="Center" FontSize="15" IsEnabled="{Binding ElementName=cb, Path=IsChecked}" />
+            
+            <window:WindowsFormsHost Grid.Column="2" IsEnabled="{Binding ElementName=cb, Path=IsChecked}" Name="datetime" Visibility="Collapsed">
+                <wf:DateTimePicker x:Name="dateValue" Format="Time" ></wf:DateTimePicker>
+            </window:WindowsFormsHost>
+            
+            
+            
+            <Label Name="typeLb" Content="V" Grid.Column="3" VerticalAlignment="Center" FontSize="12" IsEnabled="{Binding ElementName=cb, Path=IsChecked}"/>
+            <ComboBox Name="Combobox" Grid.Column="4" Height="30" IsEnabled="{Binding ElementName=cb, Path=IsChecked}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="15"/>
+
+            <local:TimePicker Grid.Column="2" Grid.ColumnSpan="2" x:Name="timePicker" Visibility="Collapsed" IsEnabled="{Binding ElementName=cb, Path=IsChecked}"/>
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="White"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=cb, Path=IsEnabled}" Value="False">
+                            <Setter Property="Background" Value="DarkGray"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+        </Grid>
+    </Border>
+</UserControl>
+

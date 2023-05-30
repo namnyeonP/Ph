@@ -1,0 +1,30 @@
+FullID,Value,Unit,Description
+W2MLMTC4001,500,V,Hi-pot input voltage
+W2MLMTC4002,60,Sec,Hi-pot input time
+W2MLMTC4003,2,Sec,Rest Time before discharge
+W2MLMTC4004,600,A,Discharge Current
+W2MLMTC4005,10,Sec,Discharge Time
+W2MLMTC4006,610,A,Discharge Current Upper Limit
+W2MLMTC4007,10,Sec,Rest Time after discharge 
+W2MLMTC4008,600,A,Charge Current
+W2MLMTC4009,10,Sec,Charge Time 
+W2MLMTC4010,40,Sec,Rest Time after charge
+W2MLMTC4011,610,A,Charge Current Upper Limit
+W2MLMTC4012,42,V,Safety Voltage Upper Limit
+W2MLMTC4013,30,V,Safety Voltage Lower Limit
+W2MLMTC4014,750,kOhm,Line Open Check Upper Limit
+W2MLMTC4015,650,kOhm,Line Open Check Lower Limit
+W2MLMTC4016,0.007187,,Cell DCIR Compensation constant 1
+W2MLMTC4017,0,,Cell DCIR Compensation constant 2
+W2MLMTC4018,0.071867,,Module DCIR Compensation constant 1
+W2MLMTC4019,0,,Module DCIR Compensation constant 2
+W2MLMTC4020,0,,Coefficient T
+W2MLMTC4021,0,,Coefficient V
+W2MLMTC4022,3,Sec,Hi-pot Ramp Up time
+W2MLMTC4023,0.00003,kOhm,IR Range
+W2MLMTC4024,750,V,Withstand input voltage
+W2MLMTC4025,2,sec,Withstand ramp up time
+W2MLMTC4026,10,sec,Withstand input time
+W2MLMTC4027,10,mA,Arc detection current
+W2MLMTC4028,1,,Arc enable(on=1/off=0)
+W2MLMTC4029,0,sec,Withstand falldown time

@@ -1,0 +1,39 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EOL_BASE.클래스
+{
+    public class SingleIV
+    {
+        string ch;
+        List<double> dataList = new List<double>();
+        int _mSec;
+        double _lastValue;
+
+        public string Ch
+        {
+            get { return ch; }
+            set { ch = value; }
+        }
+
+         public List<double> DataList
+        {
+            get { return dataList; }
+            set { dataList = value; }
+        }
+         public int mSec
+        {
+            get { return _mSec; }
+            set { _mSec = value; }
+        }
+
+         public double lastValue
+        {
+            get { return _lastValue; }
+            set { _lastValue = value; }
+        }
+    }
+}
