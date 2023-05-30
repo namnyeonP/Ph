@@ -1,0 +1,4 @@
+id,VALUE,unit,description
+WM183MMTC4501,1001,V,Plus IR Voltage Level
+WM183MMTC4502,61,sec,Plus IR Time
+WM183MMTC4503,Auto,A/str,IR Manual range setting(default Auto)

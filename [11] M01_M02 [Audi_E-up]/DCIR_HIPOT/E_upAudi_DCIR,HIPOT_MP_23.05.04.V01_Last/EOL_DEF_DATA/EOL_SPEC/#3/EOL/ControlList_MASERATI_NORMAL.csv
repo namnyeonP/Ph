@@ -1,0 +1,16 @@
+id,VALUE,unit,description
+WMPMTC4501,3,sec,Rest Time before discharge
+WMPMTC4502,132,A,Discharge Current
+WMPMTC4503,10,sec,Discharge Time
+WMPMTC4504,135,A,Discharge Current Upper Limit
+WMPMTC4505,30,sec,Rest Time after discharge 
+WMPMTC4506,132,A,Charge Current
+WMPMTC4507,10,sec,Charge Time 
+WMPMTC4508,135,A,Charge Current Upper Limit
+WMPMTC4509,1,sec,Rest Time after charge 
+WMPMTC4510,25.2,V,Safety Voltage Upper Limit
+WMPMTC4511,18,V,Safety Voltage Lower Limit
+WMPMTC4512,0.0185,,Cell DCIR Fomula1
+WMPMTC4513,-0.00093,,Cell DCIR Fomula2
+WMPMTC4514,0.1110,,Module DCIR Fomula1
+WMPMTC4515,-0.00555,,Module DCIR Fomula1

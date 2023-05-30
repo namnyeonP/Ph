@@ -1,0 +1,4 @@
+id,VALUE,unit,description
+WMPMTC4601,1000,V,Plus IR Voltage Level
+WMPMTC4602,30,sec,Plus IR Time
+WMPMTC4603,0.0000003,A/str,IR Manual range setting(default Auto)

@@ -1,0 +1,9 @@
+id,VALUE,unit,description
+WPFMMTC4201,1000,V,Plus IR Voltage Level
+WPFMMTC4202,60,sec,Plus IR Time
+WPFMMTC4203,AUTO,A/str,IR Manual range setting(default Auto)
+WPFMMTC4204,2500,V,Plus Withstand Voltage Level
+WPFMMTC4205,1,sec,Plus Withstand Voltage Time
+WPFMMTC4206,5,sec,Plus Withstand Rampup Time
+WPFMMTC4207,0,,Arc Enable
+WPFMMTC4208,5,mA,Arc Limit

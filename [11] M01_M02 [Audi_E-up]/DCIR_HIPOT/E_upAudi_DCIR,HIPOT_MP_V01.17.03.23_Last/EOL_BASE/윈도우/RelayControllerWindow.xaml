@@ -1,0 +1,25 @@
+﻿<Window x:Class="EOL_BASE.윈도우.RelayControllerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="RelayController" Height="400" Width="400" ResizeMode="NoResize" WindowStyle="ToolWindow">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="24"/>
+            <RowDefinition Height="24"/>
+            <RowDefinition/>
+            <RowDefinition Height="100"/>
+        </Grid.RowDefinitions>
+        <Label Content="DO NOT CLOSE more than " FontSize="12" HorizontalAlignment="Left" Margin="3,0,0,0"/>
+        <Label Content=" 10 relays" FontSize="15" HorizontalAlignment="Left" Margin="155,0,0,0" Foreground="Red" FontWeight="Bold" VerticalAlignment="Center"/>
+        <Label Content="at the same time!!    " FontSize="12" Grid.Row="0" HorizontalAlignment="Right" Margin="3,0,0,0"/>        
+        <Label Content="It may cause " FontSize="12" Grid.Row="1" HorizontalAlignment="Left" Margin="3,0,0,0"/>
+        <Label Content="               MALFUNCTION" FontSize="15" HorizontalAlignment="Left" Margin="3,0,0,0" Foreground="Red" FontWeight="Bold" VerticalAlignment="Center"  Grid.Row="1"/>
+        <Label Content=" due to insufficient current." FontSize="12" Grid.Row="1" HorizontalAlignment="Right" Margin="0,0,0,0"/>
+        <UniformGrid Name="unigrid" Grid.Row="2"></UniformGrid>
+        <GroupBox Header="Description" Grid.Row="5">
+            <TextBox TextWrapping="Wrap" Name="descTb" Text="No Desc"
+  AcceptsReturn="True"
+  VerticalScrollBarVisibility="Visible"/>
+        </GroupBox>
+    </Grid>
+</Window>
