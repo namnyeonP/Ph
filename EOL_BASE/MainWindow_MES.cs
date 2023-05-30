@@ -14,7 +14,7 @@ namespace EOL_BASE
 {
     public partial class MainWindow
     {
-        static string MEB_SPEC_CV_MIN_RESULT = "3.52";
+        static string MEB_SPEC_CV_MIN_RESULT = "3.520000";
         
         //221004 수집 항목 포드 12,13라인
         #region MC_OPEN_CHECK_DETAIL_ITEM_EOL
